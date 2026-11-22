@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.32.2 · 22/11/2026 · Lieu · Mise à jour sur place
+
+- Quand la météo du lieu affiché arrive (un quart d'heure) ou que l'heure change, l'écran n'est plus remplacé en entier : seuls les textes et valeurs qui ont changé sont réécrits, le reste est gardé tel quel. Le remplacement complet précédait tous les gels du journal de l'iPad du 22/11 (18:56, 19:27, 19:58, 20:28, 20:59, 21:00) et le blocage de l'affichage de 21:29.
+- Journal : chaque construction de l'écran d'un lieu est notée, avec son type (move, full ou update avec le nombre de changements) et sa durée.
+
 ## 1.32.1 · 20/11/2026 · Lieu · Alertes à la taille du résumé
 
 - Les alertes prennent la taille du résumé (texte, pictogramme, marges, coins) ; résumé, alertes et Conditions sont espacés pareil.

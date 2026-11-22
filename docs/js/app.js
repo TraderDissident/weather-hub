@@ -258,11 +258,17 @@
     var oldSide = U.$('.side', el.pages), oldView = U.$('.view', el.pages);
     var keepScroll = !dir && oldSide ? oldSide.scrollTop : 0;
     var keepView = !dir && oldView ? oldView.scrollTop : 0;
+    var t0r = Date.now(), kind = dir ? 'move' : 'full';
+    /* Même lieu, écran déjà complet : on ne met à jour que ce qui a changé au lieu de tout remplacer. Remplacer tout
+       l'écran à chaque météo reçue (un quart d'heure) et à chaque heure précédait tous les gels du journal de l'iPad
+       du 22/11 (18:56, 19:27, 19:58, 20:28, 20:59, 21:00) et le blocage de l'affichage de 21:29. */
+    var canPatch = !dir && !!w && !!oldView && el.pages.children.length === 1 && oldView.className === 'view' &&
+      !SM.ui.editing && !U.$('.lazy, .partial', oldView);
     var html;
     try {
       // Changement de lieu, ou écran en haut de page : construction en deux temps (le haut tout de suite, la suite
       // une seconde après). Si l'on est en train de lire plus bas, tout est construit d'un coup, sans clignotement.
-      SM.ui.lazy = !!dir || (!keepScroll && !keepView);
+      SM.ui.lazy = canPatch ? false : (!!dir || (!keepScroll && !keepView));
       var oldDetails = U.$('.card.details', el.pages);
       if (oldDetails && oldDetails.offsetHeight > 60) SM.ui.detailsH = oldDetails.offsetHeight;
       html = w ? SM.ui.view(p, w, now) : SM.ui.empty(p, A.failures[p.id] ? I.t().offline : I.t().loading, !!A.failures[p.id]);
@@ -299,11 +305,20 @@
         }, Math.max(0, 230 - (Date.now() - (t0 || 0))));
       });
     } else {
-      // L'ancien écran est retiré puis vidé tout de suite (voir U.release).
-      var olds = [].slice.call(el.pages.children);
-      el.pages.innerHTML = html;
-      olds.forEach(release);
-      fillLater(1000);
+      var box2 = canPatch ? document.createElement('div') : null;
+      if (box2) box2.innerHTML = html;
+      if (box2 && box2.childNodes.length === 1 && box2.firstChild.nodeName === oldView.nodeName) {
+        var n = { c: 0, dead: [] };
+        patchNode(oldView, box2.firstChild, n);
+        n.dead.forEach(release);
+        kind = 'update · ' + n.c + ' changes';
+      } else {
+        // L'ancien écran est retiré puis vidé tout de suite (voir U.release).
+        var olds = [].slice.call(el.pages.children);
+        el.pages.innerHTML = html;
+        olds.forEach(release);
+        fillLater(1000);
+      }
     }
     // Polices et icônes peuvent encore bouger la mise en page : on recale un peu après.
     setTimeout(function () { SM.ui.align(el.pages); }, 400);
@@ -329,6 +344,35 @@
     status();
     // En dernier : une seule mise en page pour tout l'écran, au lieu d'une ici et d'une autre après les écritures.
     SM.ui.align(el.pages);
+    SM.diag.info('render ' + p.name + ' · ' + kind + ' · ' + (Date.now() - t0r) + ' ms');
+  }
+
+  /* Mise à jour sur place : « a » est l'écran affiché, « b » le même écran construit à neuf hors de la page. Les
+     éléments de même nature sont gardés (avec leur défilement et leurs animations) ; seuls les textes et attributs
+     qui diffèrent sont réécrits, et un élément de nature différente est remplacé. L'heure, la date et la ligne
+     « Mis à jour » sont laissées à clock() et status(), qui les tiennent. Le style et data-fill posés par SM.ui.align sont gardés : align les recalcule après. */
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  function patchNode(a, b, n) {
+    if (a.nodeType === 3 || a.nodeType === 8) { if (a.nodeValue !== b.nodeValue) { a.nodeValue = b.nodeValue; n.c++; } return; }
+    if (a.nodeType !== 1) return;
+    if (/(^| )(status|clock|date)( |$)/.test(a.getAttribute('class') || '')) return;
+    var i, at, keep = a.hasAttribute('data-fill') || a.namespaceURI === SVGNS;
+    for (i = 0; i < b.attributes.length; i++) {
+      at = b.attributes[i];
+      if (a.getAttribute(at.name) !== at.value) { a.setAttribute(at.name, at.value); n.c++; }
+    }
+    for (i = a.attributes.length - 1; i >= 0; i--) {
+      at = a.attributes[i];
+      if (!b.hasAttribute(at.name) && !(keep && (at.name === 'style' || at.name === 'data-fill'))) { a.removeAttribute(at.name); n.c++; }
+    }
+    var ak = [].slice.call(a.childNodes), bk = [].slice.call(b.childNodes);
+    for (i = 0; i < bk.length; i++) {
+      var x = ak[i], y = bk[i];
+      if (!x) { a.appendChild(y); n.c++; }
+      else if (x.nodeType === y.nodeType && x.nodeName === y.nodeName) patchNode(x, y, n);
+      else { a.replaceChild(y, x); if (x.nodeType === 1) n.dead.push(x); n.c++; }
+    }
+    for (; i < ak.length; i++) { a.removeChild(ak[i]); if (ak[i].nodeType === 1) n.dead.push(ak[i]); n.c++; }
   }
 
   var hoursT = 0;
