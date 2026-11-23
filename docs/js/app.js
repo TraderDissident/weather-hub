@@ -842,6 +842,12 @@
 
   function everyMinute() {
     if (document.hidden) return;
+    /* iOS 12 change parfois la taille de la page après une rotation sans prévenir : le ciel gardait celle d'avant
+       (pluie arrêtée aux trois quarts de l'écran). Rattrapé ici, et noté au journal pour savoir quand cela arrive. */
+    if (A.oldIOS && navigator.standalone) {
+      var sz = screenSize();
+      if (sz.w !== SM.sky.w || sz.h !== SM.sky.h) { SM.diag.info('sky size ' + SM.sky.w + 'x' + SM.sky.h + ' -> ' + sz.w + 'x' + sz.h); layout(); scene(true); }
+    }
     var p = A.places[A.idx];
     if (A.mode === 'map') loadAll();
     // La liste est redessinée chaque minute : le ciel de chaque carte suit l'heure.
@@ -889,7 +895,7 @@
     var hs = h + 'px';
     document.documentElement.style.height = hs; document.body.style.height = hs; el.app.style.height = hs;
     appClass();
-    SM.sky.resize();
+    SM.sky.resize(w, h);
     if (A.mode === 'map' && SM.map) SM.map.resize();
     if (A.mode === 'list') SM.list.fit(el.pages);
     SM.ui.align(el.pages);

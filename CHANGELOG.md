@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.32.4 · 23/11/2026 · Ciel · Nuages sans attente de la carte graphique
+
+- Les nuages sont maintenant des images calculées par l'app, et plus des canevas à dégradés. Relevé du 23/11 sur l'iPad pendant un gel : Safari 12 fait dessiner ces dégradés par la carte graphique et bloque toute la page tant qu'elle n'a pas fini, de quelques secondes à plusieurs dizaines de minutes. Rendu identique (écart mesuré : 4 sur 255 au pire), animations inchangées.
+- Pluie, neige et grêle couvrent toute la largeur en paysage : le ciel prend sa taille de la mise en page, et se recale dans la minute si iOS 12 change la taille de l'écran sans prévenir (ligne « sky size » au journal).
+
 ## 1.32.3 · 23/11/2026 · Réglages · Tags à largeur fixe
 
 - Sélecteurs à tags (réglages, démonstration, calibration, carte) : le tag choisi garde exactement sa largeur. Son gras l'élargissait et faisait passer les tags suivants à la ligne selon le choix ; le gras est maintenant rendu sans changer la place du texte.

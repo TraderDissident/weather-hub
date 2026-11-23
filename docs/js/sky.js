@@ -77,8 +77,11 @@
   }
   S.setFxScale = function (k) { fxScale = U.clamp(k || 1, 0.25, 1); if (S.w) sizeFx(); return fxCv.width + 'x' + fxCv.height; };
 
-  S.resize = function () {
-    var w = root.clientWidth || innerWidth, h = root.clientHeight || innerHeight;
+  /* La mise en page donne la taille quand elle la connaît. Sur l'iPad (iOS 12), la largeur lue sur la page reste
+     parfois celle du portrait après une rotation : la pluie, la neige et la grêle s'arrêtaient alors aux trois quarts
+     de l'écran en paysage. */
+  S.resize = function (hintW, hintH) {
+    var w = hintW || root.clientWidth || innerWidth, h = hintH || root.clientHeight || innerHeight;
     if (w === S.w && h === S.h) return;
     S.w = w; S.h = h;
     sizeFx();
@@ -118,8 +121,8 @@
 
   /* ---------- nuages ---------- */
   function makeCloud(rnd, i) {
-    var c = { cv: document.createElement('canvas'), wrap: document.createElement('div'), puffs: [] };
-    c.cv.width = 320; c.cv.height = 160;
+    var c = { im: document.createElement('img'), wrap: document.createElement('div'), puffs: [] };
+    c.im.alt = ''; c.im.draggable = false;
     var n = 7 + Math.floor(rnd() * 6);
     for (var k = 0; k < n; k++) {
       var t = k / (n - 1);
@@ -131,37 +134,104 @@
     }
     for (var m = 0; m < 4; m++) c.puffs.push([60 + rnd() * 200, 118 + rnd() * 10, 22 + rnd() * 12]);
     c.wrap.className = 'cloud';
-    c.wrap.appendChild(c.cv);
+    c.wrap.appendChild(c.im);
     c.seed = i;
     return c;
   }
 
-  function paintCloud(c, light, shadeC, alpha) {
-    var g = c.cv.getContext('2d');
-    g.clearRect(0, 0, 320, 160);
-    for (var i = 0; i < c.puffs.length; i++) {
-      var p = c.puffs[i];
-      var tint = U.clamp((p[1] - 50) / 90, 0, 1);
-      var col = U.mix(light, shadeC, tint);
-      var gr = g.createRadialGradient(p[0], p[1] - p[2] * 0.2, p[2] * 0.15, p[0], p[1], p[2]);
-      gr.addColorStop(0, U.rgb(col, (0.9 * alpha).toFixed(3)));
-      gr.addColorStop(0.55, U.rgb(col, (0.6 * alpha).toFixed(3)));
-      gr.addColorStop(1, U.rgb(col, 0));
-      g.fillStyle = gr;
-      g.beginPath(); g.arc(p[0], p[1], p[2], 0, Math.PI * 2); g.fill();
+  /* Un nuage est une image calculée point par point, plus un canevas. Mesuré sur l'iPad le 23/11 (relevé des fils
+     pendant un gel) : Safari 12 fait dessiner les dégradés d'un canevas par la carte graphique, et la page attend
+     qu'elle ait fini avant de pouvoir afficher ce canevas. Quand la carte graphique tarde, toute la page s'arrête :
+     quelques secondes à chaque changement de teinte, parfois des dizaines de minutes. Le calcul ci-dessous donne la
+     même image (formule du dégradé radial à deux cercles, mêmes paliers, même superposition) sans rien lui demander ;
+     l'image est remise à Safari sous forme de PNG, qu'il affiche comme n'importe quelle image. */
+  var CW = 320, CH = 160, cloudAcc = null, cloudRaw = null, cloudPng = null, crcT = null, pngAt = null;
+  function u32(o, p, v) { o[p] = (v >>> 24) & 255; o[p + 1] = (v >>> 16) & 255; o[p + 2] = (v >>> 8) & 255; o[p + 3] = v & 255; }
+  function crc32(o, a, b) {
+    var c = -1, i;
+    for (i = a; i < b; i++) c = crcT[(c ^ o[i]) & 255] ^ (c >>> 8);
+    return (c ^ -1) >>> 0;
+  }
+  // PNG sans compression : en-têtes et découpage écrits une fois, seuls les points et les sommes de contrôle changent.
+  function pngInit() {
+    var n, k, i, rawLen = CH * (1 + CW * 4), blocks = Math.ceil(rawLen / 65535), zLen = 2 + blocks * 5 + rawLen + 4;
+    crcT = new Int32Array(256);
+    for (n = 0; n < 256; n++) { var c = n; for (k = 0; k < 8; k++) c = c & 1 ? (c >>> 1) ^ 0xEDB88320 : c >>> 1; crcT[n] = c; }
+    cloudAcc = new Float32Array(CW * CH * 4);
+    cloudRaw = new Uint8Array(rawLen);
+    var o = cloudPng = new Uint8Array(8 + 25 + 12 + zLen + 12), p = 0, sig = [137, 80, 78, 71, 13, 10, 26, 10], tag = function (t) { for (var j = 0; j < 4; j++) o[p++] = t.charCodeAt(j); };
+    for (i = 0; i < 8; i++) o[p++] = sig[i];
+    u32(o, p, 13); p += 4; tag('IHDR'); u32(o, p, CW); u32(o, p + 4, CH); o[p + 8] = 8; o[p + 9] = 6; p += 13;
+    u32(o, p, crc32(o, p - 17, p)); p += 4;
+    u32(o, p, zLen); p += 4;
+    pngAt = { idat: p, data: [] };
+    tag('IDAT'); o[p++] = 0x78; o[p++] = 0x01;
+    for (i = 0; i < blocks; i++) {
+      var len = Math.min(65535, rawLen - i * 65535);
+      o[p++] = i === blocks - 1 ? 1 : 0; o[p++] = len & 255; o[p++] = len >>> 8; o[p++] = ~len & 255; o[p++] = (~len >>> 8) & 255;
+      pngAt.data.push([p, i * 65535, i * 65535 + len]); p += len;
     }
+    pngAt.adler = p; p += 4; pngAt.crc = p; p += 4;
+    u32(o, p, 0); p += 4; tag('IEND'); u32(o, p, crc32(o, p - 4, p));
+  }
+  function paintCloud(c, light, shadeC, alpha) {
+    if (!cloudPng) pngInit();
+    var acc = cloudAcc, raw = cloudRaw, n4 = CW * CH * 4, i, k, x, y;
+    for (k = 0; k < n4; k++) acc[k] = 0;
+    var a0 = +(0.9 * alpha).toFixed(3), a1 = +(0.6 * alpha).toFixed(3);
+    for (i = 0; i < c.puffs.length; i++) {
+      var p = c.puffs[i], cx = p[0], cy = p[1], r = p[2];
+      var col = U.mix(light, shadeC, U.clamp((cy - 50) / 90, 0, 1));
+      var cr = Math.round(col[0]), cg = Math.round(col[1]), cb = Math.round(col[2]);
+      // Dégradé du cercle (cx, cy - 0,2 r, 0,15 r) au cercle (cx, cy, r), limité au disque (cx, cy, r).
+      var y0 = cy - r * 0.2, r0 = r * 0.15, cdy = r * 0.2, dr = r * 0.85, qa = dr * dr - cdy * cdy, rr = r * r;
+      var xa = Math.max(0, Math.floor(cx - r)), xb = Math.min(CW - 1, Math.ceil(cx + r));
+      var ya = Math.max(0, Math.floor(cy - r)), yb = Math.min(CH - 1, Math.ceil(cy + r));
+      for (y = ya; y <= yb; y++) {
+        var dy = y + 0.5 - y0, dyc = y + 0.5 - cy, qb = dy * cdy + r0 * dr, row = y * CW * 4;
+        for (x = xa; x <= xb; x++) {
+          var dx = x + 0.5 - cx, d2 = dx * dx;
+          if (d2 + dyc * dyc >= rr) continue;
+          var qc = d2 + dy * dy - r0 * r0, t = qc <= 0 ? 0 : (Math.sqrt(qb * qb + qa * qc) - qb) / qa;
+          if (t >= 1) continue;
+          if (t < 0) t = 0;
+          var sa = t <= 0.55 ? a0 + (a1 - a0) * t / 0.55 : a1 * (1 - t) / 0.45, inv = 1 - sa;
+          k = row + x * 4;
+          acc[k] = cr * sa + acc[k] * inv; acc[k + 1] = cg * sa + acc[k + 1] * inv; acc[k + 2] = cb * sa + acc[k + 2] * inv; acc[k + 3] = sa + acc[k + 3] * inv;
+        }
+      }
+    }
+    // Points en RGBA non prémultiplié, un octet de filtre (0) en tête de chaque ligne.
+    var q = 0;
+    for (y = 0, k = 0; y < CH; y++) {
+      raw[q++] = 0;
+      for (x = 0; x < CW; x++, k += 4, q += 4) {
+        var a = acc[k + 3];
+        if (a > 0) { raw[q] = acc[k] / a + 0.5; raw[q + 1] = acc[k + 1] / a + 0.5; raw[q + 2] = acc[k + 2] / a + 0.5; raw[q + 3] = a * 255 + 0.5; }
+        else { raw[q] = 0; raw[q + 1] = 0; raw[q + 2] = 0; raw[q + 3] = 0; }
+      }
+    }
+    var o = cloudPng, s1 = 1, s2 = 0, len = raw.length;
+    for (i = 0; i < pngAt.data.length; i++) o.set(raw.subarray(pngAt.data[i][1], pngAt.data[i][2]), pngAt.data[i][0]);
+    for (i = 0; i < len;) { var end = Math.min(len, i + 5552); for (; i < end; i++) { s1 += raw[i]; s2 += s1; } s1 %= 65521; s2 %= 65521; }
+    u32(o, pngAt.adler, ((s2 << 16) | s1) >>> 0);
+    u32(o, pngAt.crc, crc32(o, pngAt.idat, pngAt.adler + 4));
+    var url = URL.createObjectURL(new Blob([o], { type: 'image/png' })), old = c.url;
+    c.url = url;
+    c.im.onload = c.im.onerror = function () { if (old) URL.revokeObjectURL(old); };
+    c.im.src = url;
   }
 
-  /* Les 13 nuages possibles sont créés une seule fois par taille d'écran : canevas, largeur, trajet (une règle
-     d'animation chacun). Changer de lieu ou de vent ne recrée plus rien : ni canevas, ni feuille de style (dont la
+  /* Les 13 nuages possibles sont créés une seule fois par taille d'écran : image, largeur, trajet (une règle
+     d'animation chacun). Changer de lieu ou de vent ne recrée plus rien : ni image, ni feuille de style (dont la
      réécriture faisait recalculer le style de toute la page). */
   var MAX_CLOUDS = 13;
   function ensurePool() {
     var key = S.w + '|' + S.h;
     if (key === S.poolKey) return;
     S.poolKey = key;
-    // Safari d'iOS 12 ne rend la mémoire d'un canevas qu'au ramasse-miettes, et plafonne leur total : on la rend tout de suite.
-    clouds.forEach(function (c) { c.cv.width = 0; c.cv.height = 0; });
+    // Les images des nuages précédents sont rendues tout de suite.
+    clouds.forEach(function (c) { c.im.onload = c.im.onerror = null; if (c.url) URL.revokeObjectURL(c.url); });
     cloudBox.innerHTML = '';
     clouds = [];
     var rnd = U.seeded('nuages'), css = '';
