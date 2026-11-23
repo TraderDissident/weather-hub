@@ -355,7 +355,9 @@ svg.wx.big { width: 5.6rem; height: 5.6rem; }
 .field > label { display: block; margin: 1.1rem 0 .5rem; font-size: .75rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
 .seg { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; }
 .seg button { margin: 0 .45rem .45rem 0; padding: .5rem .95rem; border-radius: 1.2rem; background: rgba(255, 255, 255, .08); border: 1px solid var(--line); font-size: .92rem; }
-.seg button.on { background: #fff; color: #0b1226; font-weight: 600; border-color: #fff; }
+/* Le tag choisi garde exactement sa largeur : un vrai gras l'élargissait et faisait passer les suivants à la ligne.
+   Le gras est rendu par un contour du texte, qui ne change pas la place qu'il occupe. */
+.seg button.on { background: #fff; color: #0b1226; -webkit-text-stroke: .035em #0b1226; border-color: #fff; }
 .twocol { display: -webkit-flex; display: flex; }
 /* Côte à côte, à leur taille : l'écart entre les deux reste celui des autres contrôles. */
 .twocol .field { -webkit-flex: none; flex: none; margin-right: 1.5rem; }

@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.32.3 · 23/11/2026 · Réglages · Tags à largeur fixe
+
+- Sélecteurs à tags (réglages, démonstration, calibration, carte) : le tag choisi garde exactement sa largeur. Son gras l'élargissait et faisait passer les tags suivants à la ligne selon le choix ; le gras est maintenant rendu sans changer la place du texte.
+
 ## 1.32.2 · 22/11/2026 · Lieu · Mise à jour sur place
 
 - Quand la météo du lieu affiché arrive (un quart d'heure) ou que l'heure change, l'écran n'est plus remplacé en entier : seuls les textes et valeurs qui ont changé sont réécrits, le reste est gardé tel quel. Le remplacement complet précédait tous les gels du journal de l'iPad du 22/11 (18:56, 19:27, 19:58, 20:28, 20:59, 21:00) et le blocage de l'affichage de 21:29.
