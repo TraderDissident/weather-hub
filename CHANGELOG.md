@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.32.6 · 24/11/2026 · Ciel · Plus aucun canevas
+
+- Pluie, bruine, neige, grêle, éclairs et étoiles ne sont plus dessinés dans des canevas. Relevé du 23/11 sur l'iPad pendant un gel : pour afficher un canevas, Safari 12 attend que la carte graphique ait fini de le dessiner, et quand elle tarde toute la page s'arrête. Depuis le retrait des canevas des nuages (1.32.4), les gels n'arrivaient plus que sous la pluie, dernier canevas redessiné trente fois par seconde (24/11 : 20 gels sous la bruine, aucun en dix heures de temps sec). Chaque goutte, flocon ou grêlon est maintenant un petit élément que la carte graphique déplace seule : la page n'a plus rien à dessiner à chaque image. Rendu égal : même nombre, mêmes longueurs, épaisseurs, couleurs et vitesses, même pente selon le vent, même balancement des flocons, mêmes étoiles aux mêmes places.
+
 ## 1.32.5 · 24/11/2026 · Journal · Dernières étapes avant un gel
 
 - Après un gel, le journal ajoute une ligne « steps » sous la ligne FROZEN : les dernières étapes de l'app avant l'arrêt (ciel, rendu, nuages, pluie, enregistrements), leur durée, le délai entre leur fin et l'arrêt, ce qu'elles ont changé à l'écran (fond, couches montrées ou retirées, nuages repeints, pluie), l'étape en cours si l'arrêt tombe au milieu d'une étape, et les premières à la reprise. Les repères restent en mémoire : rien de plus n'est écrit dans l'iPad tant que tout va bien. Aucun changement d'affichage ni de rythme.

@@ -41,41 +41,39 @@
   var S = {
     w: 0, h: 0, motion: 'auto', paused: false,
     scene: null, light: null, brightness: 0.3,
-    layerFlip: false, particles: [], kind: 'none', fps: 30
+    layerFlip: false, kind: 'none', fps: 0
   };
 
-  var root, starsBox, fog1, fog2, skyA, skyB, deck, sunEl, moonEl, starsCv, twinkleCv, cloudBox, hillsEl, fogEl, fxCv, fxCtx, flashEl, styleEl;
+  var root, starsBox, fog1, fog2, skyA, skyB, deck, sunEl, moonEl, starsIm, twinkleIm, cloudBox, hillsEl, fogEl, fxEl, fxStyle, boltEl, flashEl, styleEl;
   var clouds = [];
-  var loopOn = false, lastFrame = 0, frameCount = 0, fpsStart = 0, slowSince = 0, quality = 1;
-  var nextFlash = 0, bolt = null;
+  var quality = 1;
 
+  /* Plus aucun canevas dans le ciel. Relevé des fils de l'iPad pendant un gel (23/11) : Safari 12 fait dessiner un
+     canevas par la carte graphique, et pour l'afficher la page attend qu'elle ait fini ; quand elle tarde, toute la
+     page s'arrête. Les nuages étaient les premiers retirés (1.32.4) ; les gels n'arrivaient plus ensuite que sous la
+     pluie, dernier canevas redessiné trente fois par seconde (24/11 : 20 gels sous la bruine, aucun par temps sec).
+     Étoiles : deux images calculées. Pluie, neige, grêle : un petit élément par goutte, animé par la carte graphique
+     seule, sans que la page ait rien à dessiner ni à attendre. Éclair : un tracé vectoriel. */
   S.init = function (container) {
     root = container;
     root.innerHTML =
       '<div class="sky-l" id="skyA"></div><div class="sky-l" id="skyB"></div>' +
-      '<div id="starsBox"><canvas id="stars"></canvas><canvas id="twinkle"></canvas></div>' +
+      '<div id="starsBox"><img id="stars" alt=""><img id="twinkle" alt=""></div>' +
       '<div id="sun"><div class="halo"></div><div class="disc"></div></div><div id="moonEl"></div>' +
       '<div id="deck"></div><div id="cloudBox"></div>' +
       '<div id="fog"><div class="fog1"></div><div class="fog2"></div></div>' +
-      '<div id="hills"></div><canvas id="fx"></canvas><div id="flash"></div>';
+      '<div id="hills"></div><div id="fx"></div><div id="bolt"></div><div id="flash"></div>';
     skyA = U.$('#skyA'); skyB = U.$('#skyB'); deck = U.$('#deck'); sunEl = U.$('#sun'); moonEl = U.$('#moonEl');
-    starsCv = U.$('#stars'); twinkleCv = U.$('#twinkle'); cloudBox = U.$('#cloudBox'); hillsEl = U.$('#hills');
-    fogEl = U.$('#fog'); starsBox = U.$('#starsBox'); fog1 = U.$('.fog1', fogEl); fog2 = U.$('.fog2', fogEl); fxCv = U.$('#fx'); fxCtx = fxCv.getContext('2d'); flashEl = U.$('#flash');
+    starsIm = U.$('#stars'); twinkleIm = U.$('#twinkle'); cloudBox = U.$('#cloudBox'); hillsEl = U.$('#hills');
+    fogEl = U.$('#fog'); starsBox = U.$('#starsBox'); fog1 = U.$('.fog1', fogEl); fog2 = U.$('.fog2', fogEl); fxEl = U.$('#fx'); boltEl = U.$('#bolt'); flashEl = U.$('#flash');
+    fxEl.style.display = 'none'; boltEl.style.display = 'none';
     styleEl = document.createElement('style');
     document.head.appendChild(styleEl);
+    // Trajets des gouttes : une feuille à part, pour que sa réécriture ne relance pas les nuages.
+    fxStyle = document.createElement('style');
+    document.head.appendChild(fxStyle);
     S.resize();
   };
-
-  /* Canevas de la pluie : un pixel de canevas par point d'écran (fxScale = 1). S.setFxScale(0.5) le dessine deux fois
-     moins fin (quatre fois moins de pixels à remplir et à garder), pour mesurer sur l'iPad ce que la finesse coûte
-     et juger à l'œil ce qu'elle apporte. Le dessin garde les mêmes coordonnées dans les deux cas. */
-  var fxScale = 1;
-  function sizeFx() {
-    fxCv.width = Math.round(S.w * fxScale); fxCv.height = Math.round(S.h * fxScale);
-    fit(fxCv, S.w, S.h);
-    fxCtx.setTransform(fxScale, 0, 0, fxScale, 0, 0);
-  }
-  S.setFxScale = function (k) { fxScale = U.clamp(k || 1, 0.25, 1); if (S.w) sizeFx(); return fxCv.width + 'x' + fxCv.height; };
 
   /* La mise en page donne la taille quand elle la connaît. Sur l'iPad (iOS 12), la largeur lue sur la page reste
      parfois celle du portrait après une rotation : la pluie, la neige et la grêle s'arrêtaient alors aux trois quarts
@@ -84,7 +82,6 @@
     var w = hintW || root.clientWidth || innerWidth, h = hintH || root.clientHeight || innerHeight;
     if (w === S.w && h === S.h) return;
     S.w = w; S.h = h;
-    sizeFx();
     drawStars();
     if (S.scene) { S.hillsKey = ''; buildClouds(true); S.apply(S.scene, true); }
   };
@@ -94,28 +91,55 @@
      Chaque canevas reçoit donc une couche à sa taille exacte en pixels d'écran, et c'est la carte graphique qui
      l'agrandit jusqu'à la taille voulue. Même image à l'écran (elle était déjà agrandie), mémoire divisée. */
   function ratio() { return Math.min(window.devicePixelRatio || 1, 2); }
-  function fit(cv, showW, showH) {
-    var r = ratio(), w = cv.width / r, h = cv.height / r;
-    cv.style.width = w + 'px'; cv.style.height = h + 'px';
+  // « pw × ph » : taille de l'image en points d'image ; « showW × showH » : taille voulue à l'écran.
+  function fit(el, pw, ph, showW, showH) {
+    var r = ratio(), w = pw / r, h = ph / r;
+    el.style.width = w + 'px'; el.style.height = h + 'px';
     var t = 'scale3d(' + (showW / w).toFixed(5) + ',' + (showH / h).toFixed(5) + ',1)';
-    cv.style.webkitTransformOrigin = cv.style.transformOrigin = '0 0';
-    cv.style.webkitTransform = cv.style.transform = t;
+    el.style.webkitTransformOrigin = el.style.transformOrigin = '0 0';
+    el.style.webkitTransform = el.style.transform = t;
   }
 
   /* ---------- étoiles ---------- */
+  /* Mêmes étoiles qu'avec les canevas (mêmes tirages, dans le même ordre) : chaque disque est calculé point par
+     point, sa bordure adoucie sur 5 × 5 sous-points, puis l'image est remise à Safari en PNG. */
   function drawStars() {
     var rnd = U.seeded('etoiles');
-    [[starsCv, 170, 0.9], [twinkleCv, 28, 1.6]].forEach(function (spec) {
-      var cv = spec[0];
-      cv.width = Math.round(S.w / 2); cv.height = Math.round(S.h * 0.8 / 2);
-      fit(cv, S.w, S.h * 0.8);
-      var g = cv.getContext('2d');
-      g.clearRect(0, 0, cv.width, cv.height);
-      for (var i = 0; i < spec[1]; i++) {
-        var x = rnd() * cv.width, y = Math.pow(rnd(), 1.4) * cv.height, r = (0.25 + rnd() * 0.55) * spec[2];
-        g.fillStyle = 'rgba(255,' + Math.round(240 + rnd() * 15) + ',' + Math.round(220 + rnd() * 35) + ',' + (0.35 + rnd() * 0.65).toFixed(2) + ')';
-        g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+    [[starsIm, 170, 0.9], [twinkleIm, 28, 1.6]].forEach(function (spec) {
+      var im = spec[0], w = Math.max(1, Math.round(S.w / 2)), h = Math.max(1, Math.round(S.h * 0.8 / 2));
+      var acc = new Float32Array(w * h * 4), i, x, y, k, u, v;
+      for (i = 0; i < spec[1]; i++) {
+        var cx = rnd() * w, cy = Math.pow(rnd(), 1.4) * h, r = (0.25 + rnd() * 0.55) * spec[2];
+        var cg = Math.round(240 + rnd() * 15), cb = Math.round(220 + rnd() * 35), al = +(0.35 + rnd() * 0.65).toFixed(2), rr = r * r;
+        var xa = Math.max(0, Math.floor(cx - r)), xb = Math.min(w - 1, Math.floor(cx + r));
+        var ya = Math.max(0, Math.floor(cy - r)), yb = Math.min(h - 1, Math.floor(cy + r));
+        for (y = ya; y <= yb; y++) {
+          for (x = xa; x <= xb; x++) {
+            var hit = 0;
+            for (v = 0; v < 5; v++) for (u = 0; u < 5; u++) {
+              var dx = x + (u + 0.5) / 5 - cx, dy = y + (v + 0.5) / 5 - cy;
+              if (dx * dx + dy * dy < rr) hit++;
+            }
+            if (!hit) continue;
+            var sa = al * hit / 25, inv = 1 - sa;
+            k = (y * w + x) * 4;
+            acc[k] = 255 * sa + acc[k] * inv; acc[k + 1] = cg * sa + acc[k + 1] * inv; acc[k + 2] = cb * sa + acc[k + 2] * inv; acc[k + 3] = sa + acc[k + 3] * inv;
+          }
+        }
       }
+      var raw = new Uint8Array(h * (1 + w * 4)), q = 0;
+      for (y = 0, k = 0; y < h; y++) {
+        raw[q++] = 0;
+        for (x = 0; x < w; x++, k += 4, q += 4) {
+          var a = acc[k + 3];
+          if (a > 0) { raw[q] = acc[k] / a + 0.5; raw[q + 1] = acc[k + 1] / a + 0.5; raw[q + 2] = acc[k + 2] / a + 0.5; raw[q + 3] = a * 255 + 0.5; }
+        }
+      }
+      var old = im._url;
+      im._url = pngURL(w, h, raw);
+      im.onload = im.onerror = function () { if (old) URL.revokeObjectURL(old); };
+      im.src = im._url;
+      fit(im, w, h, S.w, S.h * 0.8);
     });
   }
 
@@ -173,6 +197,30 @@
     }
     pngAt.adler = p; p += 4; pngAt.crc = p; p += 4;
     u32(o, p, 0); p += 4; tag('IEND'); u32(o, p, crc32(o, p - 4, p));
+  }
+  // PNG sans compression d'une image RGBA quelconque (étoiles) ; « raw » porte déjà l'octet de filtre de chaque ligne.
+  function pngURL(w, h, raw) {
+    if (!crcT) pngInit();
+    var rawLen = raw.length, blocks = Math.ceil(rawLen / 65535), zLen = 2 + blocks * 5 + rawLen + 4;
+    var o = new Uint8Array(8 + 25 + 12 + zLen + 12), p = 0, i, sig = [137, 80, 78, 71, 13, 10, 26, 10];
+    var tag = function (t) { for (var j = 0; j < 4; j++) o[p++] = t.charCodeAt(j); };
+    for (i = 0; i < 8; i++) o[p++] = sig[i];
+    u32(o, p, 13); p += 4; tag('IHDR'); u32(o, p, w); u32(o, p + 4, h); o[p + 8] = 8; o[p + 9] = 6; p += 13;
+    u32(o, p, crc32(o, p - 17, p)); p += 4;
+    u32(o, p, zLen); p += 4;
+    var idat = p;
+    tag('IDAT'); o[p++] = 0x78; o[p++] = 0x01;
+    for (i = 0; i < blocks; i++) {
+      var len = Math.min(65535, rawLen - i * 65535);
+      o[p++] = i === blocks - 1 ? 1 : 0; o[p++] = len & 255; o[p++] = len >>> 8; o[p++] = ~len & 255; o[p++] = (~len >>> 8) & 255;
+      o.set(raw.subarray(i * 65535, i * 65535 + len), p); p += len;
+    }
+    var s1 = 1, s2 = 0;
+    for (i = 0; i < rawLen;) { var end = Math.min(rawLen, i + 5552); for (; i < end; i++) { s1 += raw[i]; s2 += s1; } s1 %= 65521; s2 %= 65521; }
+    u32(o, p, ((s2 << 16) | s1) >>> 0); p += 4;
+    u32(o, p, crc32(o, idat, p)); p += 4;
+    u32(o, p, 0); p += 4; tag('IEND'); u32(o, p, crc32(o, p - 4, p));
+    return URL.createObjectURL(new Blob([o], { type: 'image/png' }));
   }
   function paintCloud(c, light, shadeC, alpha) {
     if (!cloudPng) pngInit();
@@ -345,105 +393,197 @@
   }
 
   /* ---------- particules ---------- */
-  function setParticles(kind, level) {
-    var counts = { drizzle: [0, 90, 130, 170], rain: [0, 120, 190, 250], snow: [0, 70, 110, 150], hail: [0, 70, 110, 140] };
-    var n = kind === 'none' ? 0 : Math.round((counts[kind] || [0, 0, 0, 0])[level] * quality * (S.motion === 'reduced' ? 0.5 : 1));
-    if (S.motion === 'off') n = 0;
-    var arr = S.particles;
-    if ((n ? kind : 'none') !== S.kind || n !== arr.length) SM.diag.note('fx ' + S.kind + ' ' + arr.length + '>' + (n ? kind : 'none') + ' ' + n);
-    S.kind = n ? kind : 'none';
-    while (arr.length < n) arr.push({ x: Math.random() * S.w, y: Math.random() * S.h, z: 0.4 + Math.random() * 0.6, p: Math.random() * 6.28 });
-    arr.length = n;
-    // Sans pluie ni neige, le canevas plein écran sort de l'affichage : une couche de moins à composer.
-    var need = (n || S.storm) ? '' : 'none';
-    if (fxCv.style.display !== need) { fxCv.style.display = need; SM.diag.note(need ? '-fx' : '+fx'); }
-    if ((n || S.storm) && !loopOn && !S.paused) { loopOn = true; lastFrame = 0; fpsStart = 0; frameCount = 0; U.raf(frame); SM.diag.note('fx loop on'); }
-    if (!n && !S.storm) fxCtx.clearRect(0, 0, S.w, S.h);
-  }
+  /* Pluie, bruine, neige et grêle sans canevas. Chaque goutte est un petit élément (un trait ou un disque vectoriel,
+     peint une seule fois) que la carte graphique déplace seule le long d'un trajet CSS : la page n'a plus rien à
+     dessiner à chaque image, ni à attendre. Mêmes mesures qu'avec le canevas : nombre, longueur, épaisseur, couleur,
+     vitesse selon la profondeur (z de 0,4 à 1), pente selon le vent, balancement des flocons, et un point d'image
+     par point d'écran (l'élément est peint à taille réduite puis agrandi, comme l'était le canevas).
+     Pluie : le vent incline tout le calque #fx ; la goutte y tombe droit, donc suit la pente voulue à l'écran.
+     Neige, grêle : le vent fait dériver tout le calque, en boucle sur une largeur d'écran (deux jeux identiques). */
+  var COUNTS = { drizzle: [0, 90, 130, 170], rain: [0, 120, 190, 250], snow: [0, 70, 110, 150], hail: [0, 70, 110, 140] };
+  var FX = {
+    rain: { sp: 17, len: 20, lw: 1.6 }, drizzle: { sp: 8, len: 9, lw: 1.2 },
+    snow: { v: 1.3, drift: 0.5, r0: 1.5, r1: 2.6, col: 'rgba(255,255,255,0.85)', sway: true },
+    hail: { v: 11, drift: 0.6, r0: 1.6, r1: 1.2, col: 'rgba(235,245,255,0.85)', sway: false }
+  };
+  // JIT : écart au plus entre deux chutes d'une même goutte ; LEGS chutes par tour ; SETS trajets ; BW : boîte d'une goutte.
+  var JIT = 120, LEGS = 3, SETS = 4, BW = 14, GROUPS = 12;
+  var fxKey = '', fxList = [], fxQueue = [], fxT = 0, fxN = 0, fxSlope = null, fxTint = '', fxDrift = null, fxSets = null;
 
-  /* Pendant qu'un nouvel écran se construit, la pluie garde son image : la page est de toute façon occupée, et
-     chaque image de pluie retarderait d'autant l'arrivée de l'écran. Elle reprend dès que l'écran entre. */
-  var holdUntil = 0;
-  S.hold = function (ms) { holdUntil = ms ? Date.now() + ms : 0; };
+  function tr(x, y) { return 'translate3d(' + x + 'px,' + y.toFixed(1) + 'px,0) scale(' + ratio() + ')'; }
+  function both(name, body) { return '@-webkit-keyframes ' + name + '{' + body.replace(/transform:/g, '-webkit-transform:') + '}@keyframes ' + name + '{' + body + '}'; }
 
-  function frame(ts) {
-    if (S.paused || (S.kind === 'none' && !S.storm && !bolt)) { var le = SM.diag.step('fx loop off'); loopOn = false; fxCtx.clearRect(0, 0, S.w, S.h); SM.diag.done(le); return; }
-    U.raf(frame);
-    if (holdUntil && Date.now() < holdUntil) { lastFrame = 0; fpsStart = 0; return; }
-    if (lastFrame && ts - lastFrame < 31) return;
-    var gap = lastFrame ? ts - lastFrame : 0;
-    var dt = lastFrame ? Math.min(gap, 80) / 33.3 : 1;
-    lastFrame = ts;
-    // Un trou de plus de 400 ms veut dire onglet en arrière-plan ou écran en veille, pas lenteur : on repart à zéro.
-    if (!fpsStart || gap > 400) { fpsStart = ts; frameCount = 0; }
-    frameCount++;
-    if (ts - fpsStart > 2000) {
-      S.fps = Math.round(frameCount * 1000 / (ts - fpsStart));
-      SM.diag.fps = S.fps;
-      frameCount = 0; fpsStart = ts;
-      if (S.fps < 20 && S.fps > 4 && S.motion === 'auto') {
-        if (!slowSince) slowSince = ts;
-        if (ts - slowSince > 10000 && quality > 0.3) {
-          quality = quality > 0.6 ? 0.5 : 0.3;
-          slowSince = 0;
-          SM.diag.warn('animation slow (' + S.fps + ' fps), quality ' + quality);
-          if (S.scene) { buildClouds(true); S.apply(S.scene, true); }
+  /* Les gouttes possibles, tirées une fois par temps et par taille d'écran. Le niveau de pluie et le vent ne font
+     qu'en ajouter ou en retirer aux marges : celles qui tombent déjà ne bougent pas. */
+  function fxBuild(kind) {
+    var P = FX[kind], rnd = U.seeded('particules ' + kind), css = '', i, g, j;
+    clearTimeout(fxT); fxT = 0; fxQueue = []; fxList = []; fxEl.innerHTML = ''; fxSlope = null; fxTint = ''; fxDrift = null; fxSets = null;
+    fxEl.style.webkitTransitionDuration = fxEl.style.transitionDuration = '0s';
+    fxEl.style.webkitTransform = fxEl.style.transform = 'none';
+    if (P.sp) {
+      /* Pluie : LEGS chutes par tour, chacune dans une colonne décalée, comme la goutte qui renaissait ailleurs.
+         Entre deux chutes, la goutte passe par un détour hors de l'écran, loin à droite. */
+      var bh = P.len + 3, y0 = -20 - (bh - 1.5), y1 = S.h + P.len + 2 - (bh - 1.5), far = 3 * (S.w + S.h);
+      for (g = 0; g < SETS; g++) {
+        var offs = [], body = '';
+        for (j = 0; j < LEGS; j++) offs.push(Math.round((rnd() * 2 - 1) * JIT));
+        for (j = 0; j < LEGS; j++) {
+          var a = j / LEGS * 100, b = (j + 1) / LEGS * 100, o = offs[j], o2 = offs[(j + 1) % LEGS];
+          body += a.toFixed(4) + '%{transform:' + tr(o, y0) + '}' + (b - 0.003).toFixed(4) + '%{transform:' + tr(o, y1) + '}' +
+            (b - 0.002).toFixed(4) + '%{transform:' + tr(o + far, y1) + '}' + (b - 0.001).toFixed(4) + '%{transform:' + tr(o2 + far, y0) + '}';
         }
-      } else slowSince = 0;
-    }
-    var g = fxCtx, w = S.w, h = S.h, arr = S.particles, wind = S.windPx || 0, i, p;
-    var lf = SM.diag.step('fx frame');
-    g.clearRect(0, 0, w, h);
-    if (S.kind === 'rain' || S.kind === 'drizzle') {
-      var len = S.kind === 'rain' ? 20 : 9, sp = S.kind === 'rain' ? 17 : 8;
-      g.strokeStyle = S.dropColor; g.lineWidth = S.kind === 'rain' ? 1.6 : 1.2;
-      g.beginPath();
-      for (i = 0; i < arr.length; i++) {
-        p = arr[i];
-        p.y += sp * p.z * dt; p.x += wind * p.z * dt;
-        if (p.y > h) { p.y = -20; p.x = Math.random() * (w + 200) - 100; }
-        if (p.x > w + 50) p.x -= w + 100; else if (p.x < -50) p.x += w + 100;
-        g.moveTo(p.x, p.y);
-        g.lineTo(p.x - wind * len / sp, p.y - len * p.z);
+        css += both('pf' + g, body + '100%{transform:' + tr(offs[0], y0) + '}');
       }
-      g.stroke();
-    } else if (S.kind === 'snow' || S.kind === 'hail') {
-      var hail = S.kind === 'hail';
-      g.fillStyle = hail ? 'rgba(235,245,255,0.85)' : 'rgba(255,255,255,0.85)';
-      for (i = 0; i < arr.length; i++) {
-        p = arr[i];
-        p.p += 0.03 * dt;
-        p.y += (hail ? 11 : 1.3) * p.z * dt;
-        p.x += (wind * (hail ? 0.6 : 0.5) + (hail ? 0 : Math.sin(p.p) * 0.6)) * dt;
-        if (p.y > h) { p.y = -6; p.x = Math.random() * w; }
-        if (p.x > w + 10) p.x -= w + 20; else if (p.x < -10) p.x += w + 20;
-        g.beginPath(); g.arc(p.x, p.y, (hail ? 1.6 : 1.5) + p.z * (hail ? 1.2 : 2.6), 0, 6.283); g.fill();
+      // Même densité qu'avant (n gouttes sur la largeur de l'écran plus 200), sur la largeur que le vent le plus fort demande.
+      var tmax = 6 / P.sp, xa = -10 - JIT - tmax * S.h, xb = S.w + 10 + JIT + tmax * S.h;
+      // (la goutte passe un peu plus de temps hors de l'écran qu'avant, en bas : le nombre le compense)
+      var count = Math.round(COUNTS[kind][3] * (xb - xa) / (S.w + 200) * (S.h + P.len + 22) / (S.h + 20));
+      for (i = 0; i < count; i++) fxList.push({ x: xa + rnd() * (xb - xa), z: 0.4 + rnd() * 0.6, r: rnd(), g: Math.floor(rnd() * SETS), ph: rnd(), el: null, el2: null, line: null, q: false });
+    } else {
+      var W20 = S.w + 20, html = '<div class="drift">';
+      css += both('ps', 'from{transform:' + tr(0, -11) + '}to{transform:' + tr(0, S.h + 1) + '}') +
+        both('pdr', 'from{transform:translate3d(0,0,0)}to{transform:translate3d(' + W20 + 'px,0,0)}') +
+        both('pdl', 'from{transform:translate3d(0,0,0)}to{transform:translate3d(' + (-W20) + 'px,0,0)}') +
+        both('psway', 'from{transform:translate3d(-20px,0,0)}to{transform:translate3d(20px,0,0)}');
+      for (i = 0; i < COUNTS[kind][3]; i++) fxList.push({ x: -10 + rnd() * W20, z: 0.4 + rnd() * 0.6, r: rnd(), g: Math.floor(rnd() * GROUPS), ph: rnd(), el: null, el2: null, line: null, q: false });
+      // Balancement des flocons : ±20 points en 7 s, par groupes décalés (la neige d'avant : 0,6 point par image, phase propre).
+      for (j = 0; j < 2; j++) {
+        html += '<div class="set">';
+        for (g = 0; g < GROUPS; g++) {
+          var sw = 'psway 3.49s cubic-bezier(.37,0,.63,1) ' + (-(g / GROUPS) * 6.98).toFixed(2) + 's infinite alternate';
+          html += '<div class="sw"' + (P.sway ? ' style="-webkit-animation:' + sw + ';animation:' + sw + '"' : '') + '></div>';
+        }
+        html += '</div>';
       }
+      fxEl.innerHTML = html + '</div>';
+      fxSets = [fxEl.firstChild.firstChild.children, fxEl.firstChild.lastChild.children];
     }
-    if (S.storm) lightning(ts, g);
-    SM.diag.done(lf);
+    fxStyle.textContent = css;
   }
 
-  function lightning(ts, g) {
-    if (!nextFlash) nextFlash = ts + 3000 + Math.random() * 6000;
-    if (ts > nextFlash) {
-      nextFlash = ts + 5000 + Math.random() * 11000;
-      flashEl.className = '';
-      void flashEl.offsetWidth;
-      flashEl.className = 'on';
-      if (Math.random() < 0.7) {
-        var x = S.w * (0.15 + Math.random() * 0.7), y = 0, pts = [[x, y]];
-        while (y < S.h * 0.55) { y += 18 + Math.random() * 30; x += (Math.random() - 0.5) * 50; pts.push([x, y]); }
-        bolt = { pts: pts, until: ts + 220 };
+  function fxDrop(el) { if (el && el.parentNode) el.parentNode.removeChild(el); }
+  function wetMake(c, P) {
+    var bh = P.len + 3, t = +fxSlope, r = ratio(), dur = LEGS * (S.h + P.len + 22) / (P.sp * c.z * 30), d = document.createElement('div');
+    var an = 'pf' + c.g + ' ' + dur.toFixed(3) + 's linear ' + (-c.ph * dur).toFixed(3) + 's infinite';
+    d.className = 'p';
+    d.style.cssText = 'left:' + (c.x - BW / 2).toFixed(1) + 'px;width:' + BW / r + 'px;height:' + bh / r + 'px;-webkit-animation:' + an + ';animation:' + an;
+    d.innerHTML = '<svg viewBox="0 0 ' + BW + ' ' + bh + '"><line x1="' + BW / 2 + '" y1="' + (bh - 1.5) + '" x2="' + (BW / 2 - t * P.len * (1 - c.z)).toFixed(2) +
+      '" y2="' + (bh - 1.5 - P.len * c.z).toFixed(2) + '" stroke="' + fxTint + '" stroke-width="' + P.lw + '"/></svg>';
+    fxEl.appendChild(d);
+    c.el = d; c.line = d.firstChild.firstChild;
+  }
+  function dryMake(c, P) {
+    var r = ratio(), dur = (S.h + 12) / (P.v * 30 * c.z), an = 'ps ' + dur.toFixed(2) + 's linear ' + (-c.ph * dur).toFixed(2) + 's infinite';
+    var css = 'left:' + (c.x - 5).toFixed(1) + 'px;width:' + 10 / r + 'px;height:' + 10 / r + 'px;-webkit-animation:' + an + ';animation:' + an;
+    var svg = '<svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="' + (P.r0 + c.z * P.r1).toFixed(2) + '" fill="' + P.col + '"/></svg>';
+    // Les deux jeux naissent ensemble : leurs chutes restent ainsi au même point, et la boucle de la dérive ne se voit pas.
+    for (var k = 0; k < 2; k++) {
+      var d = document.createElement('div');
+      d.className = 'p'; d.style.cssText = css; d.innerHTML = svg;
+      fxSets[k][c.g].appendChild(d);
+      if (k) c.el2 = d; else c.el = d;
+    }
+  }
+  // Les gouttes sont créées par paquets, pour ne jamais occuper la page d'un bloc.
+  function fxPump() {
+    if (fxT || !fxQueue.length) return;
+    var P = FX[S.kind], n = 0, c;
+    if (!P) { fxQueue = []; return; }
+    while (fxQueue.length && n < 60) {
+      c = fxQueue.shift();
+      if (!c.q) continue;
+      c.q = false;
+      if (P.sp) wetMake(c, P); else dryMake(c, P);
+      n++;
+    }
+    if (fxQueue.length) fxT = setTimeout(function () { fxT = 0; var l = SM.diag.step('fx build'); fxPump(); SM.diag.done(l); }, 40);
+  }
+  function fxSync(n) {
+    var kind = S.kind, P = FX[kind], i, c;
+    fxN = n;
+    if (!n || !P) {
+      if (fxKey) { fxKey = ''; clearTimeout(fxT); fxT = 0; fxQueue = []; fxList = []; fxSets = null; fxEl.innerHTML = ''; }
+      return;
+    }
+    var key = kind + '|' + S.w + '|' + S.h + '|' + ratio();
+    if (key !== fxKey) { fxKey = key; fxBuild(kind); }
+    var f = n / COUNTS[kind][3], wind = S.windPx || 0;
+    if (P.sp) {
+      var t = wind / P.sp, slope = t.toFixed(4), tint = S.dropColor, redo = slope !== fxSlope || tint !== fxTint;
+      var lo = -10 - JIT - Math.max(0, t) * S.h, hi = S.w + 10 + JIT + Math.max(0, -t) * S.h;
+      if (slope !== fxSlope) {
+        // Premier réglage : tout de suite. Ensuite, le vent tourne en 3 s, sans à-coup.
+        fxEl.style.webkitTransitionDuration = fxEl.style.transitionDuration = fxSlope === null ? '0s' : '3s';
+        fxEl.style.webkitTransform = fxEl.style.transform = 'matrix(1,0,' + slope + ',1,0,0)';
+      }
+      fxSlope = slope; fxTint = tint;
+      for (i = 0; i < fxList.length; i++) {
+        c = fxList[i];
+        if (!(c.r < f && c.x >= lo && c.x <= hi)) { c.q = false; if (c.el) { fxDrop(c.el); c.el = c.line = null; } continue; }
+        if (c.el) {
+          if (redo) { c.line.setAttribute('x2', (BW / 2 - t * P.len * (1 - c.z)).toFixed(2)); c.line.setAttribute('stroke', tint); }
+        } else if (!c.q) { c.q = true; fxQueue.push(c); }
+      }
+    } else {
+      // Dérive : wind × 0,5 (neige) ou 0,6 (grêle) point par image, la même pour tous ; en dessous d'un point par seconde, rien.
+      var v = P.drift * wind * 30, W20 = S.w + 20, box = fxEl.firstChild;
+      var drift = Math.abs(v) < 1 ? '' : (v > 0 ? 'pdr ' : 'pdl ') + Math.max(1, Math.round(W20 / Math.abs(v))) + 's linear infinite';
+      if (drift !== fxDrift) {
+        fxDrift = drift;
+        box.style.webkitAnimation = box.style.animation = drift || 'none';
+        box.lastChild.style.left = (v > 0 ? -W20 : W20) + 'px';
+      }
+      for (i = 0; i < fxList.length; i++) {
+        c = fxList[i];
+        if (!(c.r < f)) { c.q = false; if (c.el) { fxDrop(c.el); fxDrop(c.el2); c.el = c.el2 = null; } continue; }
+        if (!c.el && !c.q) { c.q = true; fxQueue.push(c); }
       }
     }
-    if (bolt) {
-      if (ts > bolt.until) { bolt = null; return; }
-      g.strokeStyle = 'rgba(240,240,255,0.9)'; g.lineWidth = 2.2; g.shadowColor = '#b9c8ff'; g.shadowBlur = 12;
-      g.beginPath(); g.moveTo(bolt.pts[0][0], bolt.pts[0][1]);
-      for (var i = 1; i < bolt.pts.length; i++) g.lineTo(bolt.pts[i][0], bolt.pts[i][1]);
-      g.stroke(); g.shadowBlur = 0;
+    fxPump();
+  }
+
+  function setParticles(kind, level) {
+    var n = kind === 'none' ? 0 : Math.round((COUNTS[kind] || [0, 0, 0, 0])[level] * quality * (S.motion === 'reduced' ? 0.5 : 1));
+    if (S.motion === 'off') n = 0;
+    var k = n ? kind : 'none';
+    if (k !== S.kind || n !== fxN) SM.diag.note('fx ' + S.kind + ' ' + fxN + '>' + k + ' ' + n);
+    S.kind = k;
+    // Sans pluie ni neige, le calque sort de l'affichage.
+    var need = n ? '' : 'none';
+    if (fxEl.style.display !== need) { fxEl.style.display = need; SM.diag.note(need ? '-fx' : '+fx'); }
+    fxSync(n);
+    stormLoop(S.storm && !S.paused);
+  }
+
+  // La pluie ne dépend plus de la page : plus rien à suspendre pendant qu'un écran se construit.
+  S.hold = function () {};
+
+  /* ---------- éclairs ---------- */
+  var flashT = 0, boltT = 0;
+  function stormLoop(on) {
+    if (!on) { clearTimeout(flashT); flashT = 0; return; }
+    if (flashT) return;
+    var go = function () { flash(); flashT = setTimeout(go, 5000 + Math.random() * 11000); };
+    flashT = setTimeout(go, 3000 + Math.random() * 6000);
+  }
+  function flash() {
+    if (document.hidden) return;
+    var l = SM.diag.step('flash'), r = ratio();
+    flashEl.className = '';
+    void flashEl.offsetWidth;
+    flashEl.className = 'on';
+    if (Math.random() < 0.7) {
+      var x = S.w * (0.15 + Math.random() * 0.7), y = 0, pts = x.toFixed(1) + ',0';
+      while (y < S.h * 0.55) { y += 18 + Math.random() * 30; x += (Math.random() - 0.5) * 50; pts += ' ' + x.toFixed(1) + ',' + y.toFixed(1); }
+      // Même trait qu'avant (2,2 points, lueur de 12), peint à taille réduite puis agrandi comme l'était le canevas.
+      var glow = 'drop-shadow(0 0 ' + 6 / r + 'px #b9c8ff)', sc = 'translateZ(0) scale(' + r + ')';
+      boltEl.innerHTML = '<svg viewBox="0 0 ' + S.w + ' ' + S.h + '" style="width:' + S.w / r + 'px;height:' + S.h / r + 'px;-webkit-transform:' + sc + ';transform:' + sc +
+        ';-webkit-filter:' + glow + ';filter:' + glow + '"><polyline points="' + pts + '" fill="none" stroke="rgba(240,240,255,0.9)" stroke-width="2.2"/></svg>';
+      boltEl.style.display = '';
+      clearTimeout(boltT);
+      boltT = setTimeout(function () { boltEl.style.display = 'none'; boltEl.innerHTML = ''; }, 220);
     }
+    SM.diag.done(l);
   }
 
   /* ---------- placement des astres ---------- */
@@ -641,7 +781,9 @@
     if (kind === 'rain' || kind === 'drizzle' || kind === 'snow' || kind === 'hail') { pk = kind; pl = lvl; }
     if (kind === 'storm') { pk = 'rain'; pl = 3; }
     if (sc.rate > 0 && pk === 'none' && cover > 0.5) { pk = sc.cold ? 'snow' : 'rain'; pl = sc.rate > 4 ? 3 : sc.rate > 1 ? 2 : 1; }
-    S.dropColor = U.rgb(U.mix(H('#9fb0cc'), H('#eef4fb'), daylight), (0.5 + daylight * 0.25).toFixed(2));
+    // Par seizièmes de jour : au crépuscule, les gouttes ne sont pas repeintes à chaque retouche infime de leur teinte.
+    var dq = Math.round(daylight * 16) / 16;
+    S.dropColor = U.rgb(U.mix(H('#9fb0cc'), H('#eef4fb'), dq), (0.5 + dq * 0.25).toFixed(2));
     S.storm = (kind === 'storm' || kind === 'hail') && S.motion !== 'off';
     setParticles(pk, pl);
     };
@@ -657,6 +799,7 @@
   S.setMotion = function (m) { S.motion = m; S.cloudKey = ''; if (S.scene) { buildClouds(true); S.apply(S.scene, true); } };
   S.pause = function (p) {
     S.paused = p;
+    if (p) stormLoop(false);
     if (!p && S.scene) S.apply(S.scene, true);
   };
   S.quality = function () { return quality; };
