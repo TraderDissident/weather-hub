@@ -264,6 +264,7 @@
     var key = want + '|' + dirSign + '|' + Math.round(speed) + '|' + S.w + '|' + S.h + '|' + S.motion;
     if (!force && key === S.cloudKey) return;
     S.cloudKey = key;
+    SM.diag.note('clouds ' + want);
     ensurePool();
     // Hauteur et décalage propres à chaque lieu, pour que le ciel ne soit pas le même partout.
     var rnd = U.seeded('nuages' + (sc.placeName || ''));
@@ -293,14 +294,17 @@
     var on = opacity > 0.004;
     clearTimeout(el._hideT);
     if (on) {
-      if (el.style.display === 'none') { el.style.display = ''; void el.offsetWidth; }
+      if (el.style.display === 'none') { el.style.display = ''; void el.offsetWidth; SM.diag.note('+' + el.id); }
       el.style.opacity = opacity.toFixed(3);
       return;
     }
     el.style.opacity = '0';
     if (el.style.display === 'none') return;
-    if (instant) el.style.display = 'none';
-    else el._hideT = setTimeout(function () { el.style.display = 'none'; }, 3300);
+    if (instant) { el.style.display = 'none'; SM.diag.note('-' + el.id); }
+    else {
+      SM.diag.note('fade-' + el.id);
+      el._hideT = setTimeout(function () { var l = SM.diag.step('hide ' + el.id); el.style.display = 'none'; SM.diag.done(l); }, 3300);
+    }
   }
   // Couleur arrondie par pas de 4 : au crépuscule, la teinte des nuages ne se repeint plus à chaque changement infime.
   function q4(c) { return [Math.round(c[0] / 4) * 4, Math.round(c[1] / 4) * 4, Math.round(c[2] / 4) * 4]; }
@@ -323,6 +327,7 @@
     var key = (sc.placeName || '') + '|' + cols.map(function (c) { return U.rgb(c); }).join() + '|' + sc.snowGround;
     if (key === S.hillsKey) return;
     S.hillsKey = key;
+    SM.diag.note('hills');
     var rnd = U.seeded('relief' + (sc.placeName || ''));
     var low = cols[2];
     var nightBase = H('#05070d');
@@ -344,14 +349,15 @@
     var counts = { drizzle: [0, 90, 130, 170], rain: [0, 120, 190, 250], snow: [0, 70, 110, 150], hail: [0, 70, 110, 140] };
     var n = kind === 'none' ? 0 : Math.round((counts[kind] || [0, 0, 0, 0])[level] * quality * (S.motion === 'reduced' ? 0.5 : 1));
     if (S.motion === 'off') n = 0;
-    S.kind = n ? kind : 'none';
     var arr = S.particles;
+    if ((n ? kind : 'none') !== S.kind || n !== arr.length) SM.diag.note('fx ' + S.kind + ' ' + arr.length + '>' + (n ? kind : 'none') + ' ' + n);
+    S.kind = n ? kind : 'none';
     while (arr.length < n) arr.push({ x: Math.random() * S.w, y: Math.random() * S.h, z: 0.4 + Math.random() * 0.6, p: Math.random() * 6.28 });
     arr.length = n;
     // Sans pluie ni neige, le canevas plein écran sort de l'affichage : une couche de moins à composer.
     var need = (n || S.storm) ? '' : 'none';
-    if (fxCv.style.display !== need) fxCv.style.display = need;
-    if ((n || S.storm) && !loopOn && !S.paused) { loopOn = true; lastFrame = 0; fpsStart = 0; frameCount = 0; U.raf(frame); }
+    if (fxCv.style.display !== need) { fxCv.style.display = need; SM.diag.note(need ? '-fx' : '+fx'); }
+    if ((n || S.storm) && !loopOn && !S.paused) { loopOn = true; lastFrame = 0; fpsStart = 0; frameCount = 0; U.raf(frame); SM.diag.note('fx loop on'); }
     if (!n && !S.storm) fxCtx.clearRect(0, 0, S.w, S.h);
   }
 
@@ -361,7 +367,7 @@
   S.hold = function (ms) { holdUntil = ms ? Date.now() + ms : 0; };
 
   function frame(ts) {
-    if (S.paused || (S.kind === 'none' && !S.storm && !bolt)) { loopOn = false; fxCtx.clearRect(0, 0, S.w, S.h); return; }
+    if (S.paused || (S.kind === 'none' && !S.storm && !bolt)) { var le = SM.diag.step('fx loop off'); loopOn = false; fxCtx.clearRect(0, 0, S.w, S.h); SM.diag.done(le); return; }
     U.raf(frame);
     if (holdUntil && Date.now() < holdUntil) { lastFrame = 0; fpsStart = 0; return; }
     if (lastFrame && ts - lastFrame < 31) return;
@@ -386,6 +392,7 @@
       } else slowSince = 0;
     }
     var g = fxCtx, w = S.w, h = S.h, arr = S.particles, wind = S.windPx || 0, i, p;
+    var lf = SM.diag.step('fx frame');
     g.clearRect(0, 0, w, h);
     if (S.kind === 'rain' || S.kind === 'drizzle') {
       var len = S.kind === 'rain' ? 20 : 9, sp = S.kind === 'rain' ? 17 : 8;
@@ -414,6 +421,7 @@
       }
     }
     if (S.storm) lightning(ts, g);
+    SM.diag.done(lf);
   }
 
   function lightning(ts, g) {
@@ -486,12 +494,14 @@
   function stages(list, seq) {
     if (!list.length || seq !== stageSeq) return;
     if (S.busy && S.busy()) { stageT = setTimeout(function () { stages(list, seq); }, 150); return; }
+    var l = SM.diag.step('sky part ' + (4 - list.length) + '/3');
     list.shift()();
+    SM.diag.done(l);
     if (list.length) stageT = setTimeout(function () { stages(list, seq); }, 120);
   }
   S.apply = function (sc, instant, staged) {
     clearTimeout(stageT);
-    var seq = ++stageSeq;
+    var seq = ++stageSeq, lsky = SM.diag.step('sky');
     S.scene = sc;
     var sun = SM.astro.sun(sc.ms, sc.lat, sc.lon);
     var later = SM.astro.sun(sc.ms + 600000, sc.lat, sc.lon);
@@ -519,6 +529,7 @@
     // Même ciel qu'à la dernière fois (la nuit, pendant des heures) : ni repeinte ni fondu de 3 s pour rien.
     if (bg !== S.bgKey) {
       S.bgKey = bg;
+      SM.diag.note(instant ? 'background' : 'background fade 3 s');
       var showLayer = S.layerFlip ? skyA : skyB, hideLayer = S.layerFlip ? skyB : skyA;
       var dur = instant ? '0s' : '3s';
       showLayer.style.webkitTransitionDuration = showLayer.style.transitionDuration = dur;
@@ -542,7 +553,7 @@
     var moonVis = moon.alt > -2 ? (0.25 + night * 0.75) * (1 - cover * 0.95) * U.clamp((moon.alt + 2) / 4, 0, 1) : 0;
     if (alt > 5) moonVis *= 0.5;
     var phKey = Math.round(phase.phase * 100) + (sc.lat < 0 ? 's' : 'n');
-    if (S.moonKey !== phKey) { S.moonKey = phKey; moonEl.innerHTML = SM.icons.moonPhase(phase, sc.lat < 0, 64, true); }
+    if (S.moonKey !== phKey) { S.moonKey = phKey; SM.diag.note('moon shape'); moonEl.innerHTML = SM.icons.moonPhase(phase, sc.lat < 0, 64, true); }
     layer(moonEl, moonVis, instant);
     moonEl.style.webkitTransform = moonEl.style.transform = 'translate3d(' + mp.x.toFixed(0) + 'px,' + mp.y.toFixed(0) + 'px,0)';
 
@@ -553,7 +564,7 @@
     // Voile nuageux en haut de l'écran quand le ciel est couvert.
     var deckC = mix3(gray, cols, 0.25)[0];
     var deckBg = 'linear-gradient(to bottom, ' + U.rgb(deckC, 0.95) + ' 0%, ' + U.rgb(deckC, 0.6) + ' 35%, ' + U.rgb(deckC, 0) + ' 75%)';
-    if (deckBg !== S.deckKey) { S.deckKey = deckBg; deck.style.backgroundImage = deckBg; }
+    if (deckBg !== S.deckKey) { S.deckKey = deckBg; deck.style.backgroundImage = deckBg; SM.diag.note('deck colour'); }
     var deckA = U.clamp((cover - 0.55) / 0.45, 0, 1);
     layer(deck, deckA, instant);
     /* Couleur de la première ligne de pixels sous la barre d'état du téléphone (app.js, barColor) : haut du dégradé
@@ -585,20 +596,22 @@
     var paintKey = U.rgb(light) + U.rgb(shd) + ca.toFixed(2);
     // Un nuage jamais peint l'est tout de suite ; un simple changement de teinte attend la fin du changement de lieu,
     // puis se fait un nuage à la fois, pour ne jamais occuper la page d'un bloc.
-    var pending = [];
+    var pending = [], painted = 0;
     for (var i = 0; i < (S.cloudCount || 0) && i < clouds.length; i++) {
       var cl = clouds[i];
       if (cl.paintKey === paintKey) continue;
-      if (instant || !cl.paintKey) { cl.paintKey = paintKey; paintCloud(cl, light, shd, ca); } else pending.push(cl);
+      if (instant || !cl.paintKey) { cl.paintKey = paintKey; paintCloud(cl, light, shd, ca); painted++; } else pending.push(cl);
     }
+    if (painted || pending.length) SM.diag.note('cloud paint ' + painted + ' now ' + pending.length + ' later');
     clearTimeout(S.paintT);
     if (pending.length) {
       var paintNext = function () {
         if (!pending.length) return;
         // Un changement de lieu est en cours : la teinte attend (voir busy() dans app.js).
         if (S.busy && S.busy()) { S.paintT = setTimeout(paintNext, 300); return; }
-        var c2 = pending.shift();
+        var c2 = pending.shift(), lc = SM.diag.step('cloud paint');
         c2.paintKey = paintKey; paintCloud(c2, light, shd, ca);
+        SM.diag.done(lc);
         S.paintT = setTimeout(paintNext, 60);
       };
       S.paintT = setTimeout(paintNext, 1100);
@@ -612,6 +625,7 @@
       var fc = q4(U.mix(H('#3a404c'), H('#e8ecf0'), daylight)), fogKey = U.rgb(fc);
       if (fogKey !== S.fogKey) {
         S.fogKey = fogKey;
+        SM.diag.note('fog colour');
         fog1.style.backgroundImage = 'radial-gradient(50% 50% at 50% 60%, ' + U.rgb(fc, 0.85) + ' 0%, ' + U.rgb(fc, 0) + ' 100%)';
         fog2.style.backgroundImage = 'radial-gradient(45% 50% at 50% 55%, ' + U.rgb(fc, 0.7) + ' 0%, ' + U.rgb(fc, 0) + ' 100%)';
       }
@@ -636,6 +650,7 @@
     else { partA(); partB(); partC(); }
 
     root.className = S.motion === 'off' ? 'still' : '';
+    SM.diag.done(lsky);
     return { sunAlt: alt, rising: rising, brightness: S.brightness, daylight: daylight, cols: cols };
   };
 

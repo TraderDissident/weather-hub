@@ -76,9 +76,11 @@
   function scene(instant, staged) {
     var p = A.places[A.idx];
     if (!p || A.mode !== 'place') return;
+    var l = SM.diag.step('scene');
     var r = SM.sky.apply(sceneOf(p), instant, staged);
     setPanel(r.brightness);
     A.sunAlt = r.sunAlt;
+    SM.diag.done(l);
   }
   // Panneaux plus opaques quand le ciel est clair, pour garder le texte lisible.
   // Changer cette variable fait recalculer et repeindre toutes les cartes : par pas de 0,01, et seulement si elle bouge.
@@ -86,6 +88,7 @@
     var pv = (0.22 + b * 0.45).toFixed(2), dv = (0.18 + b * 0.42).toFixed(2);
     if (pv + dv === A.panelKey) return;
     A.panelKey = pv + dv;
+    SM.diag.note('cards tint ' + pv);
     el.app.style.setProperty('--panel', 'rgba(8,14,30,' + pv + ')');
     el.app.style.setProperty('--dial', 'rgba(8,14,30,' + dv + ')');
   }
@@ -264,7 +267,7 @@
        du 22/11 (18:56, 19:27, 19:58, 20:28, 20:59, 21:00) et le blocage de l'affichage de 21:29. */
     var canPatch = !dir && !!w && !!oldView && el.pages.children.length === 1 && oldView.className === 'view' &&
       !SM.ui.editing && !U.$('.lazy, .partial', oldView);
-    var html;
+    var html, ls = SM.diag.step('render build');
     try {
       // Changement de lieu, ou écran en haut de page : construction en deux temps (le haut tout de suite, la suite
       // une seconde après). Si l'on est en train de lire plus bas, tout est construit d'un coup, sans clignotement.
@@ -279,6 +282,8 @@
     // Le reste des heures et les détails, une fois l'écran posé (et seulement si on n'a pas déjà changé de lieu).
     clearTimeout(hoursT);
     var fillLater = function (ms) { if (w && SM.ui.lazy) hoursT = setTimeout(function () { fillHours(p.id); }, ms); };
+    SM.diag.done(ls);
+    ls = SM.diag.step('render place');
     if (dir) {
       // Changement de lieu : le nouvel écran est posé à côté de l'ancien (qui finit de sortir), presque invisible ;
       // il n'entre qu'une fois posé et peint, pour que son arrivée soit un simple déplacement de couche.
@@ -320,8 +325,10 @@
         fillLater(1000);
       }
     }
+    SM.diag.done(ls, kind);
+    ls = SM.diag.step('render header');
     // Polices et icônes peuvent encore bouger la mise en page : on recale un peu après.
-    setTimeout(function () { SM.ui.align(el.pages); }, 400);
+    setTimeout(function () { var la = SM.diag.step('align later'); SM.ui.align(el.pages); SM.diag.done(la); }, 400);
     var v = U.$('.view', el.pages);
     if (!dir) {
       var s = U.$('.side', el.pages);
@@ -342,8 +349,11 @@
     A.hourKey = w ? hourKey(w) : '';
     clock();
     status();
+    SM.diag.done(ls);
+    ls = SM.diag.step('render align');
     // En dernier : une seule mise en page pour tout l'écran, au lieu d'une ici et d'une autre après les écritures.
     SM.ui.align(el.pages);
+    SM.diag.done(ls);
     SM.diag.info('render ' + p.name + ' · ' + kind + ' · ' + (Date.now() - t0r) + ' ms');
   }
 
@@ -777,6 +787,7 @@
   function quickMode() { return !!A.resumedAt && Date.now() - A.resumedAt < 180000; }
   SM.diag.onResume = function (gap) {
     if (gap < 60000) return;
+    SM.diag.beat('resume work');
     A.resumedAt = Date.now();
     minuteKey = -1;
     veil();
@@ -1110,8 +1121,12 @@
     window.addEventListener('online', function () { var p = A.places[A.idx]; A.retryAt[p.id] = 0; load(p, true); status(); });
     window.addEventListener('offline', status);
 
+    // Repère d'étape (diag.js) : ces étapes notent leur début et leur fin, pour la ligne « steps » d'après un gel.
+    clock = SM.diag.wrap('clock', clock); status = SM.diag.wrap('status', status); veil = SM.diag.wrap('veil', veil);
+    fillHours = SM.diag.wrap('hours fill', fillHours); fillRest = SM.diag.wrap('rest fill', fillRest);
+    idleWork = SM.diag.wrap('idle work', idleWork);
     setInterval(everySecond, 1000);
-    setInterval(everyMinute, 60000);
+    setInterval(SM.diag.wrap('minute', everyMinute), 60000);
     setTimeout(function () { idleWork(); setInterval(idleWork, 20000); }, 15000);
     restartSkyTimer();
     veil();

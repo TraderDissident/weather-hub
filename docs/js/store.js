@@ -63,7 +63,7 @@
   S.saveStartPlace = function (id) { write('sm.start', id); };
 
   S.weather = function (id) { return read('sm.w.' + id, null); };
-  S.saveWeather = function (id, w) { write('sm.w.' + id, w); };
+  S.saveWeather = function (id, w) { var l = SM.diag.step('weather save'); write('sm.w.' + id, w); SM.diag.done(l); };
   S.dropWeather = function (id) { try { localStorage.removeItem('sm.w.' + id); } catch (e) { /* rien */ } };
 
   SM.store = S;

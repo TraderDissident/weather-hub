@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.32.5 · 24/11/2026 · Journal · Dernières étapes avant un gel
+
+- Après un gel, le journal ajoute une ligne « steps » sous la ligne FROZEN : les dernières étapes de l'app avant l'arrêt (ciel, rendu, nuages, pluie, enregistrements), leur durée, le délai entre leur fin et l'arrêt, ce qu'elles ont changé à l'écran (fond, couches montrées ou retirées, nuages repeints, pluie), l'étape en cours si l'arrêt tombe au milieu d'une étape, et les premières à la reprise. Les repères restent en mémoire : rien de plus n'est écrit dans l'iPad tant que tout va bien. Aucun changement d'affichage ni de rythme.
+
 ## 1.32.4 · 23/11/2026 · Ciel · Nuages sans attente de la carte graphique
 
 - Les nuages sont maintenant des images calculées par l'app, et plus des canevas à dégradés. Relevé du 23/11 sur l'iPad pendant un gel : Safari 12 fait dessiner ces dégradés par la carte graphique et bloque toute la page tant qu'elle n'a pas fini, de quelques secondes à plusieurs dizaines de minutes. Rendu identique (écart mesuré : 4 sur 255 au pire), animations inchangées.
