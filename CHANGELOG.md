@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.32.7 · 25/11/2026 · Ciel · Brume plus légère à composer
+
+- La transparence de la brume (bruine, brouillard) est maintenant portée par chacune de ses deux nappes et non plus par le calque qui les contient. Un calque transparent contenant deux couches animées oblige la carte graphique à les composer à part à chaque image, puis à fondre le résultat : une passe plein écran de plus, en continu. Or tous les gels relevés depuis la 1.32.4 ont eu lieu dans le ciel de bruine, le seul qui ajoute cette brume aux gouttes (nuit du 24 au 25/11 en 1.32.6 : trois arrêts de 7 à 10 s pendant que Safari redessinait l'écran). Essai sur la piste la plus probable, sans mesure possible de la carte graphique à distance. Même brume, mêmes mouvements : écart calculé d'au plus 3 sur 255 là où les deux nappes se recouvrent. Les gouttes ne changent pas : les regrouper en grandes nappes transparentes aurait ajouté plusieurs couches plein écran à composer, donc de la charge.
+
 ## 1.32.6 · 24/11/2026 · Ciel · Plus aucun canevas
 
 - Pluie, bruine, neige, grêle, éclairs et étoiles ne sont plus dessinés dans des canevas. Relevé du 23/11 sur l'iPad pendant un gel : pour afficher un canevas, Safari 12 attend que la carte graphique ait fini de le dessiner, et quand elle tarde toute la page s'arrête. Depuis le retrait des canevas des nuages (1.32.4), les gels n'arrivaient plus que sous la pluie, dernier canevas redessiné trente fois par seconde (24/11 : 20 gels sous la bruine, aucun en dix heures de temps sec). Chaque goutte, flocon ou grêlon est maintenant un petit élément que la carte graphique déplace seule : la page n'a plus rien à dessiner à chaque image. Rendu égal : même nombre, mêmes longueurs, épaisseurs, couleurs et vitesses, même pente selon le vent, même balancement des flocons, mêmes étoiles aux mêmes places.

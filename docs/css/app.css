@@ -67,8 +67,10 @@ svg.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .cloud img { display: block; width: 100%; height: 100%; }
 #sky.still .cloud { -webkit-animation-play-state: paused !important; animation-play-state: paused !important; }
 
-#fog { top: 0; left: 0; right: 0; bottom: 0; opacity: 0; -webkit-transition: opacity 3s; transition: opacity 3s; }
-#fog div { position: absolute; left: -30%; width: 40%; height: 15%; -webkit-transform-origin: 0 0; transform-origin: 0 0; }
+/* La transparence de la brume est sur chacune des deux nappes, pas sur #fog (voir layer() dans sky.js). */
+#fog { top: 0; left: 0; right: 0; bottom: 0; }
+#fog div { position: absolute; left: -30%; width: 40%; height: 15%; -webkit-transform-origin: 0 0; transform-origin: 0 0;
+  opacity: 0; -webkit-transition: opacity 3s; transition: opacity 3s; }
 .fog1 { top: 35%; -webkit-animation: fogA 60s ease-in-out infinite alternate; animation: fogA 60s ease-in-out infinite alternate; }
 .fog2 { top: 15%; -webkit-animation: fogB 80s ease-in-out infinite alternate; animation: fogB 80s ease-in-out infinite alternate; }
 @-webkit-keyframes fogA { from { -webkit-transform: translate3d(-32%, 0, 0) scale(4); } to { -webkit-transform: translate3d(32%, 0, 0) scale(4); } }

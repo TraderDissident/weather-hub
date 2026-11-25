@@ -338,15 +338,19 @@
 
   /* Une couche invisible reste une couche que l'iPad compose à chaque image (et qu'il anime, pour le brouillard et
      les étoiles) : dès que son fondu de sortie est fini, on la retire de l'affichage. Elle revient avant de reparaître. */
-  function layer(el, opacity, instant) {
+  /* parts : la transparence est portée par ces enfants et non par le calque. Un calque transparent qui contient
+     plusieurs couches animées oblige la carte graphique à les composer à part à chaque image, puis à fondre le
+     résultat : une passe plein écran de plus, en continu. Chaque enfant fondu seul n'en demande aucune. */
+  function layer(el, opacity, instant, parts) {
     var on = opacity > 0.004;
+    var set = function (v) { if (!parts) { el.style.opacity = v; return; } for (var i = 0; i < parts.length; i++) parts[i].style.opacity = v; };
     clearTimeout(el._hideT);
     if (on) {
       if (el.style.display === 'none') { el.style.display = ''; void el.offsetWidth; SM.diag.note('+' + el.id); }
-      el.style.opacity = opacity.toFixed(3);
+      set(opacity.toFixed(3));
       return;
     }
-    el.style.opacity = '0';
+    set('0');
     if (el.style.display === 'none') return;
     if (instant) { el.style.display = 'none'; SM.diag.note('-' + el.id); }
     else {
@@ -770,7 +774,7 @@
         fog2.style.backgroundImage = 'radial-gradient(45% 50% at 50% 55%, ' + U.rgb(fc, 0.7) + ' 0%, ' + U.rgb(fc, 0) + ' 100%)';
       }
     }
-    layer(fogEl, fogA, instant);
+    layer(fogEl, fogA, instant, [fog1, fog2]);
 
     // Relief
     sc.snowGround = kind === 'snow';
