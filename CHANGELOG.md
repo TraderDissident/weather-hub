@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.40.2 · 26/11/2026 · Globe · Plein écran sans liseré
+
+- Globe en plein écran : plus de liseré autour de l'écran. Hors plein écran, le cadre de la carte et du globe garde son liseré.
+
 ## 1.40.1 · 26/11/2026 · Réglages · Vitesse de rotation du globe
 
 - Réglages : curseur « Vitesse de rotation du globe », de 0,25× à 3×, sous la taille des points. C'est le même réglage que les boutons 0,5× à 2× de la pastille du globe, qui suivent.

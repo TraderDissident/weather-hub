@@ -743,6 +743,8 @@ header.top { position: relative; }
 /* Globe en plein écran : la boîte du globe couvre tout l'écran (taille posée par M.resize), l'en-tête et ses boutons
    restent par-dessus, à leur place. */
 .mapbox.gfull { position: fixed; top: 0; left: 0; z-index: 0; border-radius: 0; box-shadow: none; }
+/* Globe plein écran : pas de liseré autour de l'écran (Matt, 26/11). */
+.mapbox.gfull::after { box-shadow: none; border-radius: 0; }
 .mapfull header.top { z-index: 40; }
 /* Contrôles masqués par un appui sur un endroit vide de la carte ou du globe (voir map.js) ; l'appui suivant les remontre. */
 /* Ville et mosaïque : seuls les boutons disparaissent, le nom du lieu ou le titre restent. Carte : tout l'en-tête. */
