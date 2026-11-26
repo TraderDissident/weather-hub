@@ -12,8 +12,18 @@
   /* Plein écran : la carte garde sa largeur et montre plus de nord avec la hauteur libre (jusqu'à 84° N, au-delà
      il n'y a plus de terres). Le sud ne bouge pas. Hors plein écran : 75° N comme avant. */
   var NORTH_MAX = 84;
-  function setNorth(lat) {
-    LAT_N = lat; MT = miller(LAT_N); ASPECT = (MT - MB) / (2 * PI);
+  function setNorth(lat, south) {
+    LAT_N = lat; LAT_S = south === undefined ? -58 : south;
+    MT = miller(LAT_N); MB = miller(LAT_S); ASPECT = (MT - MB) / (2 * PI);
+  }
+  /* Paysage, hors plein écran : la carte prend la largeur de la rangée de boutons ; si la hauteur manque, le sud est
+     rogné (jusqu'à 45° S, sous l'Australie et Tahiti), le nord reste à 75°. null si cela ne suffit pas. */
+  var SOUTH_MIN = -45;
+  function southFor(ratio) {
+    var mb = miller(75) - ratio * 2 * PI;
+    if (mb <= miller(-58)) return -58;
+    if (mb > miller(SOUTH_MIN)) return null;
+    return (2.5 * Math.atan(Math.exp(0.8 * mb)) - 0.625 * PI) / RAD;
   }
   function northFor(ratio) {
     var mt = Math.min(MB + ratio * 2 * PI, miller(NORTH_MAX));
@@ -264,7 +274,7 @@
     }
     var cw = Math.round(st.w * st.pr), ch = Math.round(st.h * st.pr);
     freeLayers();
-    var t0 = Date.now(), key = [st.style, cw, ch, LAT_N, LON0, S.imagery ? EARTH.ready : 0].join('|');
+    var t0 = Date.now(), key = [st.style, cw, ch, LAT_N, LAT_S, LON0, S.imagery ? EARTH.ready : 0].join('|');
     var hit = layerCache.filter(function (e) { return e.key === key; })[0];
     if (!hit) {
       hit = { key: key, day: canvas(cw, ch), night: canvas(cw, ch) };
@@ -275,7 +285,7 @@
       M.lastBuild = (Date.now() - t0) + ' ms painted';
     } else M.lastBuild = 'reused';
     // Taille de la carte retenue par orientation (et plein écran) : la préparation au repos la réutilise.
-    try { localStorage.setItem('sm.mapSize.' + orient() + (LAT_N !== 75 ? '.full' : ''), JSON.stringify({ w: st.w, h: st.h, pr: st.pr, lat: LAT_N })); } catch (e) { /* rien */ }
+    try { localStorage.setItem('sm.mapSize.' + orient() + (LAT_N !== 75 ? '.full' : ''), JSON.stringify({ w: st.w, h: st.h, pr: st.pr, lat: LAT_N, south: LAT_S })); } catch (e) { /* rien */ }
     st.day = hit.day; st.night = hit.night; st.tmp = canvas(cw, ch);
     if (st.box) st.box.style.background = S.bg;
     // Masque jour/nuit et bande de crépuscule, calculés sur une grille fine puis lissés à l'agrandissement.
@@ -859,14 +869,14 @@
     var S = STYLES[style];
     if (S.imagery && !EARTH.ready) { loadEarth(function () { }); return; }
     var cw = Math.round(sz.w * sz.pr), ch = Math.round(sz.h * sz.pr);
-    var key = [style, cw, ch, sz.lat, LON0, S.imagery ? EARTH.ready : 0].join('|');
+    var key = [style, cw, ch, sz.lat, sz.south === undefined ? -58 : sz.south, LON0, S.imagery ? EARTH.ready : 0].join('|');
     if (layerCache.some(function (e) { return e.key === key; })) return;
     var entry = { key: key, day: canvas(cw, ch), night: canvas(cw, ch) };
     // Chaque étape dessine avec la taille et la projection de la carte à venir, puis rend celles de l'instant.
     var withSize = function (f) {
-      var keep = [st.w, st.h, st.pr, LAT_N];
-      st.w = sz.w; st.h = sz.h; st.pr = sz.pr; setNorth(sz.lat);
-      try { f(); } finally { st.w = keep[0]; st.h = keep[1]; st.pr = keep[2]; setNorth(keep[3]); }
+      var keep = [st.w, st.h, st.pr, LAT_N, LAT_S];
+      st.w = sz.w; st.h = sz.h; st.pr = sz.pr; setNorth(sz.lat, sz.south);
+      try { f(); } finally { st.w = keep[0]; st.h = keep[1]; st.pr = keep[2]; setNorth(keep[3], keep[4]); }
     };
     var steps = [];
     withSize(function () {
@@ -962,14 +972,18 @@
     // Plein écran : la carte entière, aussi grande que l'écran le permet, sans débord ; le reste reste vide.
     var full = document.getElementById('app').className.indexOf('mapfull') >= 0;
     var fullH = full ? st.root.clientHeight - U.$('.zones', st.root).offsetHeight - 2 : 0;
-    var north = full && st.view === 'map' ? northFor(fullH / Math.max(availW, 1)) : 75;
-    if (north !== LAT_N) { setNorth(north); force = true; placeMarkers(); }
-    if (land && !full) W = Math.min(availW, (st.root.clientHeight - bottom.offsetHeight - U.$('.zones', st.root).offsetHeight - 8) / ASPECT);
+    var north = full && st.view === 'map' ? northFor(fullH / Math.max(availW, 1)) : 75, south = -58;
+    var landH = st.root.clientHeight - bottom.offsetHeight - U.$('.zones', st.root).offsetHeight - 8;
+    if (land && !full && st.view === 'map') { var sf = southFor(landH / Math.max(availW, 1)); if (sf !== null) south = sf; }
+    if (north !== LAT_N || south !== LAT_S) { setNorth(north, south); force = true; placeMarkers(); }
+    if (land && !full) W = Math.min(availW, landH / ASPECT);
     if (full) W = st.view === 'globe' ? availW : Math.min(availW, fullH / ASPECT);
     W = Math.floor(Math.max(W, 280));
     var H = full && st.view === 'globe' ? fullH : Math.round(W * ASPECT);
     // Globe en plein écran : la boîte couvre tout l'écran, en-tête compris ; les boutons restent par-dessus (classe gfull).
     var gfull = full && st.view === 'globe', appEl = document.getElementById('app');
+    // Globe en paysage : la boîte prend aussi la largeur de la rangée de boutons ; le globe reste rond, centré.
+    if (st.view === 'globe' && land && !full) { W = Math.floor(availW); H = Math.round(Math.max(280, landH)); }
     if (gfull) { W = appEl.clientWidth; H = appEl.clientHeight; }
     else if (appEl.className.indexOf(' nochrome') >= 0) appEl.className = appEl.className.replace(' nochrome', '');
     // En portrait, le globe prend la hauteur libre au lieu de celle de la carte plate.
