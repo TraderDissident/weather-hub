@@ -712,7 +712,8 @@ header.top { position: relative; }
 .mapbox.gfull { position: fixed; top: 0; left: 0; z-index: 0; border-radius: 0; box-shadow: none; }
 .mapfull header.top { z-index: 6; }
 /* Contrôles masqués par un appui sur un endroit vide de la carte ou du globe (voir map.js) ; l'appui suivant les remontre. */
-.nochrome header.top, .nochrome .gctl, .nochrome .mapcredit, .nochrome #hbar { visibility: hidden; }
+/* Ville et mosaïque : seuls les boutons disparaissent, le nom du lieu ou le titre restent. Carte : tout l'en-tête. */
+.nochrome .hside, .nochrome.mapmode header.top, .nochrome .gctl, .nochrome .mapcredit, .nochrome #hbar { visibility: hidden; }
 /* Paysage : l'en-tête masqué sort de la mise en page, la carte reprend sa hauteur (voir M.resize). */
 .land.mapmode.nochrome:not(.mapfull) header.top { position: absolute; left: 0; right: 0; top: 20px; top: max(20px, env(safe-area-inset-top)); }
 /* Sans barre d'état iOS par-dessus la page (navigateur, ordinateur), la bande de 20 points réservée en haut disparaît

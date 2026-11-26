@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.35.5 · 26/11/2026 · Vues · Masquer les boutons d'un appui partout
+
+- Ville et mosaïque aussi : un appui ou un clic sur un endroit vide masque les boutons de l'en-tête (le nom du lieu ou le titre restent) ; l'appui suivant les remontre. Les éléments qui font déjà quelque chose gardent leur action : boutons, cartes de lieux, blocs qui ouvrent un détail, heure par heure, jours, points des lieux, mode édition.
+
 ## 1.35.4 · 26/11/2026 · En-tête · Plein écran avant les options
 
 - Sur la carte et le globe, le bouton plein écran passe avant celui des options de la carte.

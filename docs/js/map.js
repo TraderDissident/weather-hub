@@ -1204,10 +1204,11 @@
   document.addEventListener('mousedown', tapStart, true);
   document.addEventListener('click', function (e) {
     var app = document.getElementById('app'), t = e.target;
-    // Page de la carte, n'importe où, sauf sur ce qui fait déjà quelque chose (bouton, lieu, étiquette, carte de ville,
-    // champ, menu des options, feuille ouverte).
-    if (!app || !t.closest || app.className.indexOf('mapmode') < 0 || /\bopen\b/.test((document.getElementById('sheet') || {}).className || '')) return;
-    if (t.closest('button, a, input, select, textarea, label, [data-act], [data-place], .mk, .mkl, .gctl, #hbar, .sheet')) return;
+    // Toutes les vues (ville, mosaïque, carte), n'importe où, sauf sur ce qui fait déjà quelque chose (bouton, lieu,
+    // étiquette, carte de ville, bloc qui ouvre une feuille, heure par heure, jours, mode édition, feuille ouverte).
+    if (!app || !t.closest || /\bopen\b/.test((document.getElementById('sheet') || {}).className || '') || (SM.ui && SM.ui.editing)) return;
+    if (t.closest('button, a, input, select, textarea, label, [data-act], [data-place], [data-sheet], [data-hview], [data-edit], [data-add], [data-remove], ' +
+      '.mk, .mkl, .gctl, #hbar, .sheet, #dots i, .drow, .retry, .status, .hscroll, .tminus, .tslot, .lcard, .mcard')) return;
     if (tapXY && Math.abs(e.clientX - tapXY[0]) + Math.abs(e.clientY - tapXY[1]) > 10) return;
     if (M.labelDragging()) return;
     var off = app.className.indexOf(' nochrome') >= 0;
