@@ -92,8 +92,15 @@
     var tt = t();
     return '<div class="seg ptabs">' + [['place', tt.tabCity], ['list', tt.tabList], ['map', tt.tabMap]].map(function (o) {
       return '<button data-ptab="' + o[0] + '"' + (o[0] === tab ? ' class="on"' : '') + '>' + U.esc(o[1]) + '</button>';
-    }).join('') + '</div><p class="hint ptabhint">' + U.esc(tt.tabHint) + '</p>';
+    }).join('') + '</div><p class="hint ptabhint">' + U.esc(tt.tabHint) + '</p>' +
+      // Tri rapide de la vue de l'onglet : par fuseau horaire (d'ouest en est), ou copie de l'ordre d'une autre vue.
+      '<div class="seg pquick"><button data-psort="tz">' + U.esc(tt.sortTz) + '</button>' +
+      ['place', 'list', 'map'].filter(function (v) { return v !== tab; }).map(function (v) {
+        return '<button data-pcopy="' + v + '">' + U.esc(tt.copyFrom.replace('%', { place: tt.tabCity, list: tt.tabList, map: tt.tabMap }[v])) + '</button>';
+      }).join('') + '</div>';
   }
+  // Décalage horaire du moment (données météo du lieu), sinon déduit de la longitude.
+  function tzOffset(p) { var w = SM.app.data[p.id]; return w && typeof w.offset === 'number' ? w.offset : Math.round(p.lon / 15) * 3600; }
 
   function resultsHTML(state) {
     var tt = t();
@@ -119,7 +126,7 @@
     body.innerHTML =
       '<div class="searchbox">' + IC.ui('search') + '<input class="search" type="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="' + U.esc(tt.search) + '" value="' + U.esc(lastQuery) + '"></div>' +
       '<div class="results">' + resultsHTML() + '</div>' +
-      tabsHTML() + '<div class="plist">' + listHTML() + '</div>';
+      '<div class="ptabsbox">' + tabsHTML() + '</div><div class="plist">' + listHTML() + '</div>';
     var input = U.$('input', body);
     input.addEventListener('input', function () {
       clearTimeout(timer);
@@ -162,8 +169,17 @@
     var tb = e.target.closest('[data-ptab]');
     if (tb) {
       tab = tb.getAttribute('data-ptab');
-      U.$$('[data-ptab]', body).forEach(function (x) { x.className = x === tb ? 'on' : ''; });
+      U.$('.ptabsbox', body).innerHTML = tabsHTML();
       refreshList();
+      return;
+    }
+    var srt = e.target.closest('[data-psort]'), cp = e.target.closest('[data-pcopy]');
+    if (srt || cp) {
+      var next = srt ? SM.app.ordered(tab).slice().sort(function (a, b) { return tzOffset(a) - tzOffset(b) || a.lon - b.lon; })
+        : SM.app.ordered(cp.getAttribute('data-pcopy')).slice();
+      SM.app.setOrder(tab, next);
+      refreshList();
+      SM.app.toast(srt ? t().sortedTz : t().copied);
       return;
     }
     var btn = e.target.closest('[data-act]');

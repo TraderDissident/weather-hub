@@ -400,6 +400,8 @@ input.search::-webkit-input-placeholder { color: rgba(255, 255, 255, .5); }
 /* Onglets de la feuille Lieux : une vue, un ordre. */
 .ptabs { margin-top: 1rem; }
 .ptabhint { margin: .1rem 0 0; }
+.pquick { margin-top: .6rem; }
+.pquick button { font-size: .85rem; padding: .38rem .8rem; }
 .plist { margin-top: .7rem; border-top: 1px solid var(--line); }
 .prow { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; padding: .55rem 0; border-bottom: 1px solid var(--line); }
 .prow.res { border-bottom-color: var(--line); }

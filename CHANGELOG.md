@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.36.0 · 26/11/2026 · Lieux · Tri rapide par vue
+
+- Feuille Lieux, sous les onglets : « Trier par fuseau horaire » range les lieux de la vue choisie d'ouest en est (décalage horaire du moment, puis longitude), et deux boutons « Copier l'ordre » reprennent l'ordre de l'une des deux autres vues. Seule la vue de l'onglet change.
+
 ## 1.35.5 · 26/11/2026 · Vues · Masquer les boutons d'un appui partout
 
 - Ville et mosaïque aussi : un appui ou un clic sur un endroit vide masque les boutons de l'en-tête (le nom du lieu ou le titre restent) ; l'appui suivant les remontre. Les éléments qui font déjà quelque chose gardent leur action : boutons, cartes de lieux, blocs qui ouvrent un détail, heure par heure, jours, points des lieux, mode édition.
