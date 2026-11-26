@@ -707,6 +707,13 @@ header.top { position: relative; }
 .mapfull header.top { z-index: 6; }
 /* Contrôles masqués par un appui sur un endroit vide de la carte ou du globe (voir map.js) ; l'appui suivant les remontre. */
 .nochrome header.top, .nochrome .gctl, .nochrome .mapcredit, .nochrome #hbar { visibility: hidden; }
+/* Paysage : l'en-tête masqué sort de la mise en page, la carte reprend sa hauteur (voir M.resize). */
+.land.mapmode.nochrome:not(.mapfull) header.top { position: absolute; left: 0; right: 0; top: 20px; top: max(20px, env(safe-area-inset-top)); }
+/* Paysage hors plein écran : marges posées par M.resize (une seule valeur partout) ; plus de centrage automatique. */
+.land.mapmode:not(.mapfull) .mapview { overflow: hidden; }
+.land.mapmode:not(.mapfull) .mapwrap { margin-top: 0; }
+.land.mapmode:not(.mapfull) .mbottom { padding-bottom: 0; }
+.land.mapmode:not(.mapfull) .mcards { padding-top: 0; padding-bottom: 0; }
 .mapfull .mapview { -webkit-overflow-scrolling: auto; }
 
 /* Lieux : poignée de glisser-déposer */

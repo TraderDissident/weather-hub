@@ -111,7 +111,9 @@
     var land = isLand() && !A.phone, w = innerWidth, base = parseFloat(document.documentElement.style.fontSize) || 16;
     // Colonne des prévisions trop étroite pour les 7 colonnes du tableau des jours : version resserrée.
     var narrow = (land ? w * 0.55 : w) < 31 * base;
-    el.app.className = (land ? 'land' : 'port') + (narrow ? ' narrow' : '') + (A.mode === 'map' ? ' mapmode' + (A.mapFull ? ' mapfull' : '') : '') + (A.mode === 'list' ? ' listmode' : '');
+    // « nochrome » (contrôles masqués d'un appui, voir map.js) survit aux mises en page tant qu'on reste sur la carte.
+    var nochrome = A.mode === 'map' && el.app.className.indexOf(' nochrome') >= 0;
+    el.app.className = (land ? 'land' : 'port') + (narrow ? ' narrow' : '') + (A.mode === 'map' ? ' mapmode' + (A.mapFull ? ' mapfull' : '') : '') + (A.mode === 'list' ? ' listmode' : '') + (nochrome ? ' nochrome' : '');
     // Bouton plein écran de l'en-tête : flèches vers l'extérieur pour y entrer, vers l'intérieur pour en sortir.
     var fb = U.$('header [data-act=mapfull]'), want = A.mapFull ? 'shrink' : 'expand';
     if (fb && fb.getAttribute('data-icon') !== want) { fb.innerHTML = IC.ui(want); fb.setAttribute('data-icon', want); }

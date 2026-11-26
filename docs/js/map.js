@@ -19,6 +19,17 @@
   /* Paysage, hors plein écran : la carte prend la largeur de la rangée de boutons ; si la hauteur manque, le sud est
      rogné (jusqu'à 45° S, sous l'Australie et Tahiti), le nord reste à 75°. null si cela ne suffit pas. */
   var SOUTH_MIN = -45;
+  // Bornes de latitude pour un rapport hauteur / largeur voulu (voir M.resize, paysage).
+  function fitLat(ratio) {
+    var span = ratio * 2 * PI, n = miller(75), sm = miller(-58), base = n - sm, extra = span - base;
+    var inv = function (m) { return (2.5 * Math.atan(Math.exp(0.8 * m)) - 0.625 * PI) / RAD; };
+    if (extra >= 0) {
+      var n2 = Math.min(n + extra, miller(NORTH_MAX)), s2 = Math.max(sm - (extra - (n2 - n)), miller(-72));
+      return [inv(n2), inv(s2)];
+    }
+    var s3 = Math.min(sm - extra, miller(SOUTH_MIN)), left = span - (n - s3), n3 = Math.max(n + Math.min(0, left), miller(73));
+    return [inv(n3), inv(s3)];
+  }
   function southFor(ratio) {
     var mb = miller(75) - ratio * 2 * PI;
     if (mb <= miller(-58)) return -58;
@@ -974,7 +985,21 @@
     var fullH = full ? st.root.clientHeight - U.$('.zones', st.root).offsetHeight - 2 : 0;
     var north = full && st.view === 'map' ? northFor(fullH / Math.max(availW, 1)) : 75, south = -58;
     var landH = st.root.clientHeight - bottom.offsetHeight - U.$('.zones', st.root).offsetHeight - 8;
-    if (land && !full && st.view === 'map') { var sf = southFor(landH / Math.max(availW, 1)); if (sf !== null) south = sf; }
+    /* Paysage hors plein écran : une seule marge M (celle des côtés) partout. Au-dessus des heures : M sous les
+       boutons, ou M sous la barre d'état quand les contrôles sont masqués (l'en-tête sort alors de la mise en page).
+       Entre la carte et les cartes de villes : M. Sous les cartes de villes : M. La carte prend toute la hauteur qui
+       reste : elle montre plus de nord (jusqu'à 84°) puis plus de sud (jusqu'à 72° S) si la place le permet, ou
+       rogne le sud (jusqu'à 45° S) puis le nord (jusqu'à 73°) si elle manque. */
+    var lay = land && !full && !SM.app.phone, padM = 0, topY = 0;
+    wrap.style.marginTop = ''; bottom.style.paddingTop = '';
+    if (lay) {
+      padM = parseFloat(getComputedStyle(wrap).paddingLeft) || 16;
+      var app0 = document.getElementById('app'), card0 = U.$('.mcard', bottom), cardsH = card0 ? card0.offsetHeight : bottom.offsetHeight;
+      var hb = U.$('header.top .iconbtn', app0), viewTop = st.root.getBoundingClientRect().top;
+      topY = app0.className.indexOf(' nochrome') >= 0 || !hb ? padM : Math.max(0, hb.getBoundingClientRect().bottom - viewTop + padM);
+      landH = st.root.clientHeight - topY - U.$('.zones', st.root).offsetHeight - padM - cardsH - padM;
+      if (st.view === 'map') { var fb = fitLat(landH / Math.max(availW, 1)); north = fb[0]; south = fb[1]; }
+    } else if (land && !full && st.view === 'map') { var sf = southFor(landH / Math.max(availW, 1)); if (sf !== null) south = sf; }
     if (north !== LAT_N || south !== LAT_S) { setNorth(north, south); force = true; placeMarkers(); }
     if (land && !full) W = Math.min(availW, landH / ASPECT);
     if (full) W = st.view === 'globe' ? availW : Math.min(availW, fullH / ASPECT);
@@ -985,6 +1010,11 @@
     // Globe en paysage : la boîte prend aussi la largeur de la rangée de boutons ; le globe reste rond, centré.
     if (st.view === 'globe' && land && !full) { W = Math.floor(availW); H = Math.round(Math.max(280, landH)); }
     if (gfull) { W = appEl.clientWidth; H = appEl.clientHeight; }
+    if (lay) {
+      // Reste de hauteur (carte plate aux bornes de latitude) : partagé au-dessus et au-dessous, la marge reste égale.
+      wrap.style.marginTop = (topY + Math.max(0, landH - H) / 2).toFixed(1) + 'px';
+      bottom.style.paddingTop = padM.toFixed(1) + 'px';
+    }
     // En portrait, le globe prend la hauteur libre au lieu de celle de la carte plate.
     if (st.view === 'globe' && !land && !full) H = Math.round(Math.max(H, Math.min(W * 0.85, st.root.clientHeight - bottom.offsetHeight - 60)));
     if (!force && W === st.w && H === st.h) return;
@@ -1172,6 +1202,8 @@
     if (M.labelDragging()) return;
     var off = app.className.indexOf(' nochrome') >= 0;
     app.className = off ? app.className.replace(' nochrome', '') : app.className + ' nochrome';
+    // Paysage : la carte reprend ou rend la hauteur de l'en-tête.
+    M.resize();
   });
 
   M.labelDragging = function () { return !!(drag && drag.moved) || Date.now() - draggedAt < 400; };

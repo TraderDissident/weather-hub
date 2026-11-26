@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.34.4 · 26/11/2026 · Carte · Marges égales, toute la hauteur
+
+- En paysage, une seule marge partout autour de la carte : à gauche, à droite, sous les boutons, entre la carte et les cartes de villes, et sous les cartes de villes (elle était plus grande en bas).
+- Contrôles masqués : l'en-tête libère sa place, la carte monte jusqu'à une marge sous la barre d'état et prend toute la hauteur libre. La carte plate montre alors plus de nord (jusqu'à 84°) puis plus de sud (jusqu'à 72° S) ; le globe grandit.
+
 ## 1.34.3 · 26/11/2026 · Carte · Masquer les contrôles depuis n'importe quel endroit vide
 
 - Page de la carte et du globe : un appui ou un clic sur n'importe quel endroit vide (la carte, l'en-tête entre les boutons, les marges, le bas de page) masque les contrôles ; le suivant les remontre. Les boutons, lieux, étiquettes et cartes de villes gardent leur action.
