@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.34.3 · 26/11/2026 · Carte · Masquer les contrôles depuis n'importe quel endroit vide
+
+- Page de la carte et du globe : un appui ou un clic sur n'importe quel endroit vide (la carte, l'en-tête entre les boutons, les marges, le bas de page) masque les contrôles ; le suivant les remontre. Les boutons, lieux, étiquettes et cartes de villes gardent leur action.
+
 ## 1.34.2 · 26/11/2026 · Carte · Masquer les contrôles d'un appui
 
 - Carte et globe, en plein écran ou non : un appui (ou un clic) sur un endroit vide masque les boutons de l'en-tête, la pastille lecture/pause et les crédits ; l'appui suivant les remontre. Quitter la carte les remontre aussi.

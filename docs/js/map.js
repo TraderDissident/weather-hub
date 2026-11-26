@@ -1155,8 +1155,8 @@
     dotSize();
   };
 
-  /* Carte et globe, plein écran ou non : un appui sur un endroit vide (ni lieu, ni étiquette, ni bouton) masque tous
-     les contrôles, l'appui suivant les remontre. Un glissement (rotation du globe) ne compte pas. Quitter la carte
+  /* Page de la carte et du globe, plein écran ou non : un appui sur un endroit vide (carte, en-tête entre les boutons,
+     marges ; ni lieu, ni étiquette, ni bouton, ni carte de ville) masque tous les contrôles, l'appui suivant les remontre. Un glissement (rotation du globe) ne compte pas. Quitter la carte
      les remontre (appClass réécrit les classes de #app). */
   var tapXY = null;
   function tapStart(e) { var t = e.touches ? e.touches[0] : e; tapXY = t ? [t.clientX, t.clientY] : null; }
@@ -1164,7 +1164,10 @@
   document.addEventListener('mousedown', tapStart, true);
   document.addEventListener('click', function (e) {
     var app = document.getElementById('app'), t = e.target;
-    if (!app || !t.closest || !t.closest('.mapbox') || t.closest('.mk, .gctl, button, a')) return;
+    // Page de la carte, n'importe où, sauf sur ce qui fait déjà quelque chose (bouton, lieu, étiquette, carte de ville,
+    // champ, menu des options, feuille ouverte).
+    if (!app || !t.closest || app.className.indexOf('mapmode') < 0 || /\bopen\b/.test((document.getElementById('sheet') || {}).className || '')) return;
+    if (t.closest('button, a, input, select, textarea, label, [data-act], [data-place], .mk, .mkl, .gctl, #hbar, .sheet')) return;
     if (tapXY && Math.abs(e.clientX - tapXY[0]) + Math.abs(e.clientY - tapXY[1]) > 10) return;
     if (M.labelDragging()) return;
     var off = app.className.indexOf(' nochrome') >= 0;
