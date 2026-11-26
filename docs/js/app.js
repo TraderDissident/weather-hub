@@ -906,6 +906,10 @@
       A.lastCarousel = Date.now();
       step(1);
     }
+    /* Nouvelle version en ligne : vérifiée aussi pendant que l'app reste affichée (au plus toutes les 30 min, voir
+       update.js), et plus seulement à l'ouverture, au retour sur l'app ou au rechargement de 4 h du matin. L'iPad, ouvert
+       en permanence, restait sinon sur sa version jusqu'au lendemain (Matt, 26/11 : bloqué en 1.32.8 tout l'après-midi). */
+    if (SM.update && !A.sheet) SM.update.check();
     // Rechargement quotidien vers 4 h pour repartir d'une mémoire propre.
     var d = new Date();
     if (d.getHours() === 4 && Date.now() - SM.diag.started > 3 * 3600000 && navigator.onLine && !A.sheet) {

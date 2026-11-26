@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.41.1 · 26/11/2026 · Mises à jour · Vérifiées toutes les 30 minutes
+
+- L'app vérifie maintenant qu'une nouvelle version est en ligne toutes les 30 minutes, même affichée en permanence, et se recharge seule pour la prendre. Avant, elle ne vérifiait qu'à l'ouverture, au retour sur l'app et au rechargement de 4 h du matin : l'iPad est resté en 1.32.8 tout l'après-midi du 26/11.
+
 ## 1.41.0 · 26/11/2026 · Globe et carte · Tour du monde, villes qui pulsent, protection de l'écran
 
 - Réglage « Tour du monde (globe) » (non par défaut) : le globe va d'une ville à l'autre dans l'ordre de la vue Carte et globe, en 2,5 s, et s'arrête 8 s sur chacune ; en plein écran, l'horloge du globe montre la ville du moment. Un geste sur le globe le suspend.
