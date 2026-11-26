@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.35.3 · 26/11/2026 · En-tête · Vues à gauche, réglages et lieux à droite
+
+- Barre du haut réorganisée : à gauche, les trois vues (ville, mosaïque, carte) ; à droite, les réglages puis les lieux, précédés sur la carte et le globe des options de la carte et du plein écran. Même écart entre tous les boutons.
+
 ## 1.35.2 · 26/11/2026 · En-tête · Outils de la carte détachés des vues
 
 - Sur la carte, même espace entre les deux outils de la carte (options, plein écran) et les trois boutons de vue qu'entre ces boutons et les réglages.

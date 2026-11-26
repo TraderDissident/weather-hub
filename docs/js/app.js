@@ -1083,15 +1083,16 @@
       '<div id="sky"></div>' +
       '<div id="ui">' +
         '<header class="top">' +
-          '<div class="hside"><button class="iconbtn" data-sheet="places" aria-label="Places">' + IC.ui('pin') + '</button></div>' +
+          // À gauche, les trois vues ; à droite, les outils de la carte (sur la carte seulement), les réglages et les lieux.
+          '<div class="hside"><button class="iconbtn" data-act="place" aria-label="City">' + IC.ui('card') + '</button>' +
+          '<button class="iconbtn" data-act="list" aria-label="All places">' + IC.ui('grid') + '</button>' +
+          '<button class="iconbtn" data-act="map" aria-label="Map">' + IC.ui('globe') + '</button></div>' +
           '<div class="ptitle"><div><span id="pname"></span><span id="pcountry"></span><span id="badge"></span></div><div id="dots"></div></div>' +
           '<div id="hbar"></div>' +
           '<div class="hside r"><button class="iconbtn mapctl" data-act="mapctl" aria-label="Map options">' + IC.ui('sliders') + '</button>' +
           '<button class="iconbtn mapctl" data-act="mapfull" aria-label="Full screen">' + IC.ui('expand') + '</button>' +
-          '<button class="iconbtn" data-act="place" aria-label="City">' + IC.ui('card') + '</button>' +
-          '<button class="iconbtn" data-act="list" aria-label="All places">' + IC.ui('grid') + '</button>' +
-          '<button class="iconbtn" data-act="map" aria-label="Map">' + IC.ui('globe') + '</button>' +
-          '<button class="iconbtn" data-sheet="settings" aria-label="Settings">' + IC.ui('gear') + '</button></div>' +
+          '<button class="iconbtn" data-sheet="settings" aria-label="Settings">' + IC.ui('gear') + '</button>' +
+          '<button class="iconbtn" data-sheet="places" aria-label="Places">' + IC.ui('pin') + '</button></div>' +
         '</header>' +
         '<main id="pages"></main>' +
       '</div>' +
