@@ -66,12 +66,17 @@
     skyA = U.$('#skyA'); skyB = U.$('#skyB'); deck = U.$('#deck'); sunEl = U.$('#sun'); moonEl = U.$('#moonEl');
     starsIm = U.$('#stars'); twinkleIm = U.$('#twinkle'); cloudBox = U.$('#cloudBox'); hillsEl = U.$('#hills');
     fogEl = U.$('#fog'); starsBox = U.$('#starsBox'); fog1 = U.$('.fog1', fogEl); fog2 = U.$('.fog2', fogEl); fxEl = U.$('#fx'); boltEl = U.$('#bolt'); flashEl = U.$('#flash');
-    fxEl.style.display = 'none'; boltEl.style.display = 'none';
+    fxEl.style.display = 'none'; boltEl.style.display = 'none'; flashEl.style.display = 'none';
     styleEl = document.createElement('style');
     document.head.appendChild(styleEl);
     // Trajets des gouttes : une feuille à part, pour que sa réécriture ne relance pas les nuages.
     fxStyle = document.createElement('style');
     document.head.appendChild(fxStyle);
+    // Clignotement des étoiles : un trajet par niveau de transparence, écrit une seule fois (voir twinkle()).
+    var twStyle = document.createElement('style'), tw = '';
+    for (var n = 1; n <= TW; n++) tw += both('tw' + n, 'from{opacity:' + (0.15 * n / TW).toFixed(4) + '}to{opacity:' + (n / TW).toFixed(4) + '}');
+    twStyle.textContent = tw;
+    document.head.appendChild(twStyle);
     S.resize();
   };
 
@@ -358,6 +363,20 @@
       el._hideT = setTimeout(function () { var l = SM.diag.step('hide ' + el.id); el.style.display = 'none'; SM.diag.done(l); }, 3300);
     }
   }
+  /* Étoiles : même règle que la brume, la transparence est sur chacune des deux images et plus sur le calque qui les
+     contient (les deux images n'ont aucun point commun : le résultat est le même). L'image qui clignote porte déjà
+     une animation d'opacité, de 0,15 à 1 ; son trajet est donc choisi parmi TW niveaux, de 0,15 × a à a, par pas de
+     0,5 %. Changer de niveau garde le moment du clignotement (délai négatif). Sans animation : opacité fixe. */
+  var TW = 200, twKey = '', twT0 = Date.now();
+  function twinkle(a) {
+    var still = S.motion === 'off', n = Math.max(1, Math.min(TW, Math.round(a * TW)));
+    var key = still ? 'still' + a.toFixed(3) : 'tw' + n;
+    if (key === twKey) return;
+    twKey = key;
+    var an = still ? 'none' : 'tw' + n + ' 3.2s ease-in-out ' + (-((Date.now() - twT0) % 6400) / 1000).toFixed(2) + 's infinite alternate';
+    twinkleIm.style.opacity = a.toFixed(3);
+    twinkleIm.style.webkitAnimation = twinkleIm.style.animation = an;
+  }
   // Couleur arrondie par pas de 4 : au crépuscule, la teinte des nuages ne se repeint plus à chaque changement infime.
   function q4(c) { return [Math.round(c[0] / 4) * 4, Math.round(c[1] / 4) * 4, Math.round(c[2] / 4) * 4]; }
 
@@ -442,7 +461,7 @@
       var tmax = 6 / P.sp, xa = -10 - JIT - tmax * S.h, xb = S.w + 10 + JIT + tmax * S.h;
       // (la goutte passe un peu plus de temps hors de l'écran qu'avant, en bas : le nombre le compense)
       var count = Math.round(COUNTS[kind][3] * (xb - xa) / (S.w + 200) * (S.h + P.len + 22) / (S.h + 20));
-      for (i = 0; i < count; i++) fxList.push({ x: xa + rnd() * (xb - xa), z: 0.4 + rnd() * 0.6, r: rnd(), g: Math.floor(rnd() * SETS), ph: rnd(), el: null, el2: null, line: null, q: false });
+      for (i = 0; i < count; i++) fxList.push({ x: xa + rnd() * (xb - xa), z: 0.4 + rnd() * 0.6, r: rnd(), g: Math.floor(rnd() * SETS), ph: rnd(), el: null, el2: null, line: null, q: false, t: 0, tint: '' });
     } else {
       var W20 = S.w + 20, html = '<div class="drift">';
       css += both('ps', 'from{transform:' + tr(0, -11) + '}to{transform:' + tr(0, S.h + 1) + '}') +
@@ -474,7 +493,13 @@
     d.innerHTML = '<svg viewBox="0 0 ' + BW + ' ' + bh + '"><line x1="' + BW / 2 + '" y1="' + (bh - 1.5) + '" x2="' + (BW / 2 - t * P.len * (1 - c.z)).toFixed(2) +
       '" y2="' + (bh - 1.5 - P.len * c.z).toFixed(2) + '" stroke="' + fxTint + '" stroke-width="' + P.lw + '"/></svg>';
     fxEl.appendChild(d);
-    c.el = d; c.line = d.firstChild.firstChild;
+    c.el = d; c.line = d.firstChild.firstChild; c.t = t; c.tint = fxTint;
+  }
+  // Retouche d'une goutte en place : inclinaison du trait et teinte du moment.
+  function wetTouch(c, P) {
+    var t = +fxSlope;
+    if (c.t !== t) { c.t = t; c.line.setAttribute('x2', (BW / 2 - t * P.len * (1 - c.z)).toFixed(2)); }
+    if (c.tint !== fxTint) { c.tint = fxTint; c.line.setAttribute('stroke', fxTint); }
   }
   function dryMake(c, P) {
     var r = ratio(), dur = (S.h + 12) / (P.v * 30 * c.z), an = 'ps ' + dur.toFixed(2) + 's linear ' + (-c.ph * dur).toFixed(2) + 's infinite';
@@ -488,7 +513,7 @@
       if (k) c.el2 = d; else c.el = d;
     }
   }
-  // Les gouttes sont créées par paquets, pour ne jamais occuper la page d'un bloc.
+  // Les gouttes sont créées, et retouchées, par paquets, pour ne jamais occuper la page d'un bloc.
   function fxPump() {
     if (fxT || !fxQueue.length) return;
     var P = FX[S.kind], n = 0, c;
@@ -497,7 +522,8 @@
       c = fxQueue.shift();
       if (!c.q) continue;
       c.q = false;
-      if (P.sp) wetMake(c, P); else dryMake(c, P);
+      if (c.el) { if (P.sp) wetTouch(c, P); }
+      else if (P.sp) wetMake(c, P); else dryMake(c, P);
       n++;
     }
     if (fxQueue.length) fxT = setTimeout(function () { fxT = 0; var l = SM.diag.step('fx build'); fxPump(); SM.diag.done(l); }, 40);
@@ -513,7 +539,7 @@
     if (key !== fxKey) { fxKey = key; fxBuild(kind); }
     var f = n / COUNTS[kind][3], wind = S.windPx || 0;
     if (P.sp) {
-      var t = wind / P.sp, slope = t.toFixed(4), tint = S.dropColor, redo = slope !== fxSlope || tint !== fxTint;
+      var t = wind / P.sp, slope = t.toFixed(4), ts = +slope, tint = S.dropColor;
       var lo = -10 - JIT - Math.max(0, t) * S.h, hi = S.w + 10 + JIT + Math.max(0, -t) * S.h;
       if (slope !== fxSlope) {
         // Premier réglage : tout de suite. Ensuite, le vent tourne en 3 s, sans à-coup.
@@ -524,9 +550,12 @@
       for (i = 0; i < fxList.length; i++) {
         c = fxList[i];
         if (!(c.r < f && c.x >= lo && c.x <= hi)) { c.q = false; if (c.el) { fxDrop(c.el); c.el = c.line = null; } continue; }
-        if (c.el) {
-          if (redo) { c.line.setAttribute('x2', (BW / 2 - t * P.len * (1 - c.z)).toFixed(2)); c.line.setAttribute('stroke', tint); }
-        } else if (!c.q) { c.q = true; fxQueue.push(c); }
+        /* Goutte déjà là : son trait n'est retouché que si sa teinte change ou si sa pointe se déplace d'au moins un
+           quart de point (la pente de la chute, elle, est donnée tout de suite et exactement par #fx). Avant, le
+           moindre écart de vent faisait retoucher toutes les gouttes dans la même tâche. Retouches et créations
+           passent par la même file, par paquets (fxPump). */
+        if (c.el && c.tint === tint && Math.abs(ts - c.t) * P.len * (1 - c.z) < 0.25) continue;
+        if (!c.q) { c.q = true; fxQueue.push(c); }
       }
     } else {
       // Dérive : wind × 0,5 (neige) ou 0,6 (grêle) point par image, la même pour tous ; en dessous d'un point par seconde, rien.
@@ -563,9 +592,18 @@
   S.hold = function () {};
 
   /* ---------- éclairs ---------- */
-  var flashT = 0, boltT = 0;
+  var flashT = 0, boltT = 0, flashOffT = 0;
   function stormLoop(on) {
-    if (!on) { clearTimeout(flashT); flashT = 0; return; }
+    if (!on) {
+      clearTimeout(flashT); flashT = 0;
+      // Hors orage, le calque de l'éclair (tout l'écran, invisible) sort de l'affichage, le dernier éclair éteint (0,8 s).
+      if (flashEl.style.display !== 'none' && !flashOffT) {
+        flashOffT = setTimeout(function () { var l = SM.diag.step('hide flash'); flashOffT = 0; flashEl.style.display = 'none'; flashEl.className = ''; SM.diag.done(l); }, 900);
+      }
+      return;
+    }
+    clearTimeout(flashOffT); flashOffT = 0;
+    if (flashEl.style.display === 'none') { flashEl.style.display = ''; SM.diag.note('+flash'); }
     if (flashT) return;
     var go = function () { flash(); flashT = setTimeout(go, 5000 + Math.random() * 11000); };
     flashT = setTimeout(go, 3000 + Math.random() * 6000);
@@ -577,11 +615,18 @@
     void flashEl.offsetWidth;
     flashEl.className = 'on';
     if (Math.random() < 0.7) {
-      var x = S.w * (0.15 + Math.random() * 0.7), y = 0, pts = x.toFixed(1) + ',0';
-      while (y < S.h * 0.55) { y += 18 + Math.random() * 30; x += (Math.random() - 0.5) * 50; pts += ' ' + x.toFixed(1) + ',' + y.toFixed(1); }
-      // Même trait qu'avant (2,2 points, lueur de 12), peint à taille réduite puis agrandi comme l'était le canevas.
-      var glow = 'drop-shadow(0 0 ' + 6 / r + 'px #b9c8ff)', sc = 'translateZ(0) scale(' + r + ')';
-      boltEl.innerHTML = '<svg viewBox="0 0 ' + S.w + ' ' + S.h + '" style="width:' + S.w / r + 'px;height:' + S.h / r + 'px;-webkit-transform:' + sc + ';transform:' + sc +
+      var x = S.w * (0.15 + Math.random() * 0.7), y = 0, pts = x.toFixed(1) + ',0', xa = x, xb = x;
+      while (y < S.h * 0.55) {
+        y += 18 + Math.random() * 30; x += (Math.random() - 0.5) * 50; pts += ' ' + x.toFixed(1) + ',' + y.toFixed(1);
+        if (x < xa) xa = x; if (x > xb) xb = x;
+      }
+      /* Même trait qu'avant (2,2 points, lueur de 12), peint à taille réduite puis agrandi comme l'était le canevas.
+         Le cadre n'est plus tout l'écran mais l'éclair et sa lueur (24 points de marge, la lueur s'éteint à 18) : la
+         lueur se calcule sur une surface plusieurs fois plus petite. Cadre en points entiers : le trait tombe sur
+         les mêmes points d'image qu'avant. */
+      var M = 24, x0 = Math.floor(xa) - M, bw = Math.ceil(xb) + M - x0, bh = Math.ceil(y) + 2 * M;
+      var glow = 'drop-shadow(0 0 ' + 6 / r + 'px #b9c8ff)', sc = 'translate3d(' + x0 + 'px,' + (-M) + 'px,0) scale(' + r + ')';
+      boltEl.innerHTML = '<svg viewBox="' + x0 + ' ' + (-M) + ' ' + bw + ' ' + bh + '" style="width:' + bw / r + 'px;height:' + bh / r + 'px;-webkit-transform:' + sc + ';transform:' + sc +
         ';-webkit-filter:' + glow + ';filter:' + glow + '"><polyline points="' + pts + '" fill="none" stroke="rgba(240,240,255,0.9)" stroke-width="2.2"/></svg>';
       boltEl.style.display = '';
       clearTimeout(boltT);
@@ -703,7 +748,8 @@
 
     // Étoiles
     var starA = night * (1 - cover * 0.9) * (kind === 'fog' ? 0.2 : 1);
-    layer(starsBox, starA, true);
+    layer(starsBox, starA, true, [starsIm]);
+    if (starA > 0.004) twinkle(starA);
 
     // Voile nuageux en haut de l'écran quand le ciel est couvert.
     var deckC = mix3(gray, cols, 0.25)[0];

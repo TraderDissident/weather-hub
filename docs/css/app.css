@@ -42,22 +42,23 @@ svg.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .sky-l { top: 0; left: 0; width: 25.2%; height: 25.2%; opacity: 0; -webkit-transition: opacity 3s linear; transition: opacity 3s linear;
   -webkit-transform: scale3d(4, 4, 1); transform: scale3d(4, 4, 1); -webkit-transform-origin: 0 0; transform-origin: 0 0; }
 #starsBox { top: 0; left: 0; width: 100%; height: 80%; }
+/* La transparence des étoiles et leur clignotement sont réglés image par image (voir twinkle() dans sky.js). */
 #starsBox img { position: absolute; top: 0; left: 0; display: block; }
-#twinkle { -webkit-animation: twinkle 3.2s ease-in-out infinite alternate; animation: twinkle 3.2s ease-in-out infinite alternate; }
-@-webkit-keyframes twinkle { from { opacity: .15; } to { opacity: 1; } }
-@keyframes twinkle { from { opacity: .15; } to { opacity: 1; } }
 
+/* Soleil et lune : halo et disque sont peints dans la couche de l'astre, à leur taille. Agrandi quatre fois par la
+   carte graphique, le halo était une couche de plus : dès que l'astre était voilé (opacité sous 1), la carte devait
+   composer les deux couches à part à chaque image avant de les fondre dans le ciel. Une couche seule se fond
+   directement. Même dégradé, même taille à l'écran ; 3 Mo de mémoire en plus pour les deux. */
 #sun, #moonEl { top: 0; left: 0; width: 0; height: 0; -webkit-transition: opacity 3s, -webkit-transform 3s; transition: opacity 3s, transform 3s; }
 #sun .disc, #sun .halo { position: absolute; border-radius: 50%; }
 #sun .disc { width: 7vmin; height: 7vmin; margin: -3.5vmin 0 0 -3.5vmin;
   background: radial-gradient(circle, #fffef4 0%, #fff7d1 52%, rgba(255, 244, 200, 0) 72%); }
-#sun .halo { width: 14vmin; height: 14vmin; margin: -7vmin 0 0 -7vmin; -webkit-transform: scale3d(4, 4, 1); transform: scale3d(4, 4, 1);
+#sun .halo { width: 56vmin; height: 56vmin; margin: -28vmin 0 0 -28vmin;
   background: radial-gradient(circle, rgba(255, 246, 214, .55) 0%, rgba(255, 236, 180, .16) 30%, rgba(255, 226, 160, 0) 68%); }
 #sun.warm .disc { background: radial-gradient(circle, #fff1cf 0%, #ffc979 50%, rgba(255, 150, 70, 0) 72%); }
 #sun.warm .halo { background: radial-gradient(circle, rgba(255, 190, 120, .6) 0%, rgba(255, 150, 90, .2) 32%, rgba(255, 120, 70, 0) 68%); }
 #moonEl svg { position: absolute; width: 8vmin; height: 8vmin; margin: -4vmin 0 0 -4vmin; }
-#moonEl::before { content: ""; position: absolute; width: 7.5vmin; height: 7.5vmin; margin: -3.75vmin 0 0 -3.75vmin; border-radius: 50%;
-  -webkit-transform: scale3d(4, 4, 1); transform: scale3d(4, 4, 1);
+#moonEl::before { content: ""; position: absolute; width: 30vmin; height: 30vmin; margin: -15vmin 0 0 -15vmin; border-radius: 50%;
   background: radial-gradient(circle, rgba(220, 230, 255, .22) 0%, rgba(200, 215, 255, 0) 65%); }
 
 #deck { top: 0; left: 0; width: 25.2%; height: 16.25%; -webkit-transition: opacity 3s; transition: opacity 3s;
@@ -78,7 +79,6 @@ svg.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 @-webkit-keyframes fogB { from { -webkit-transform: translate3d(40%, 0, 0) scale(4); } to { -webkit-transform: translate3d(-40%, 0, 0) scale(4); } }
 @keyframes fogB { from { transform: translate3d(40%, 0, 0) scale(4); } to { transform: translate3d(-40%, 0, 0) scale(4); } }
 #sky.still .fog1, #sky.still .fog2 { -webkit-animation: none; animation: none; -webkit-transform: scale(4); transform: scale(4); }
-#sky.still #twinkle { -webkit-animation: none; animation: none; }
 
 #hills { left: 0; right: 0; bottom: 0; height: 24%; }
 .port #hills { height: 17%; }
