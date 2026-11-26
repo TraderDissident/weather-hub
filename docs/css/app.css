@@ -28,7 +28,10 @@ svg.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 #app {
   --panel: rgba(8, 14, 30, .3);
   --dial: rgba(8, 14, 30, .28);
-  --line: rgba(255, 255, 255, .14);
+  /* Bordure grise unique de toute l'app (cartes, carte du monde, étiquettes, panneaux, boutons, séparateurs) : une
+     couleur pleine, la même sur tous les fonds (Matt, 26/11). Les bordures de couleur (alertes) et les états (choisi,
+     déplacé) gardent la leur. */
+  --line: #3a4152;
   --muted: rgba(255, 255, 255, .72);
   position: fixed; top: 0; left: 0; right: 0; overflow: hidden; height: 100%;
   /* Pas de fond ici : html porte la même couleur. #app est en position fixe, un fond à lui = une couche de 10,9 Mo. */
@@ -160,7 +163,7 @@ header.top {
 .dial {
   position: relative; width: 22.5rem; height: 22.5rem; border-radius: 50%;
   background: var(--dial);
-  border: 1px solid rgba(255, 255, 255, .28);
+  border: 1px solid var(--line);
   box-shadow: 0 0 0 .7rem rgba(255, 255, 255, .06), 0 0 0 calc(.7rem + 1px) rgba(255, 255, 255, .12), 0 1.5rem 3rem rgba(0, 0, 0, .18);
   display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center;
 }
@@ -396,7 +399,7 @@ input.search::-webkit-input-placeholder { color: rgba(255, 255, 255, .5); }
 .hint { color: var(--muted); font-size: .88rem; margin: .6rem 0; }
 .plist { margin-top: 1rem; border-top: 1px solid var(--line); }
 .prow { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; padding: .55rem 0; border-bottom: 1px solid var(--line); }
-.prow.res { border-bottom-color: rgba(255, 255, 255, .06); }
+.prow.res { border-bottom-color: var(--line); }
 .prow .pn { -webkit-flex: 1; flex: 1; min-width: 0; padding: 0 .6rem; cursor: pointer; }
 .prow .pn b { font-weight: 600; font-size: 1.05rem; }
 .prow .pn small { display: block; font-size: .8rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -456,7 +459,7 @@ html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050
 .mapbox::after { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; border-radius: .9rem; z-index: 6;
   background: radial-gradient(130% 120% at 50% 50%, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, .35) 100%);
   /* Liseré dessiné à l'intérieur, au-dessus de la carte et des points : visible sur tout le tour, coins compris. */
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18); }
+  box-shadow: inset 0 0 0 1px var(--line); }
 .mapcredit { position: absolute; right: .7rem; bottom: .35rem; z-index: 4; margin: 0; font-size: .58rem; color: rgba(190, 205, 235, .55); pointer-events: none; }
 .mklines { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; overflow: visible; }
 .mklines line { stroke: rgba(255, 255, 255, .55); stroke-width: 1; }
@@ -493,7 +496,7 @@ html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050
 .mkl { position: absolute; left: .75rem; top: -1.3rem; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center;
   padding: .22rem .54rem .22rem .27rem; border-radius: .72rem; white-space: nowrap;
   /* Étiquettes opaques (demande de Matt) : même teinte qu'avant, sans transparence. */
-  background: #121a2c; border: 1px solid #3a4152; box-shadow: 0 .4rem 1.2rem rgba(0, 0, 0, .4); }
+  background: #121a2c; border: 1px solid var(--line); box-shadow: 0 .4rem 1.2rem rgba(0, 0, 0, .4); }
 .mkl .wx.mki { width: 1.8rem; height: 1.8rem; margin-right: .27rem; }
 .mkt { line-height: 1.15; }
 .mkt b { font-size: .95rem; font-weight: 600; margin-right: .32rem; }
@@ -512,7 +515,7 @@ html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050
 .mcards::-webkit-scrollbar { display: none; }
 .mcards::before, .mcards::after { content: ""; -webkit-flex: 1; flex: 1; }
 .mcard { -webkit-flex: none; flex: none; width: 13.4rem; margin: 0 .4rem; padding: .8rem .9rem .75rem; border-radius: 1.1rem; cursor: pointer;
-  background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .14); box-shadow: 0 .6rem 1.6rem rgba(0, 0, 0, .35); }
+  background: rgba(255, 255, 255, .06); border: 1px solid var(--line); box-shadow: 0 .6rem 1.6rem rgba(0, 0, 0, .35); }
 .mcard.clock { width: 16.5rem; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; padding: .7rem .8rem; }
 .mcc { -webkit-flex: 1; flex: 1; min-width: 0; margin-left: .75rem; }
 .mcard.clock .mcbig .mctime { font-size: 1.8rem; }
@@ -546,7 +549,7 @@ html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050
 /* Le dégradé du ciel commence au bord intérieur de la bordure et se répète dessous : la bordure haute, translucide,
    laissait voir le BAS du dégradé (orange d'un coucher de soleil à New York, par exemple), d'où une ligne colorée en
    haut de la carte. Il part maintenant du bord extérieur, sans répétition. */
-.mcard.sky { text-shadow: 0 1px 6px rgba(0, 0, 0, .35); border-color: rgba(255, 255, 255, .24);
+.mcard.sky { text-shadow: 0 1px 6px rgba(0, 0, 0, .35); border-color: var(--line);
   background-origin: border-box; background-repeat: no-repeat; }
 .mcard.sky.bright { text-shadow: 0 1px 6px rgba(0, 0, 0, .55); }
 .mch { display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; -webkit-align-items: flex-start; align-items: flex-start; }
@@ -660,7 +663,7 @@ html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050
   border-radius: .6rem; background: rgba(255, 255, 255, .1); border: 1px solid var(--line); color: #fff; font-variant-numeric: tabular-nums; }
 .tpbtn .ic { width: 1rem; height: 1rem; margin-right: .5rem; opacity: .8; }
 .tppop { position: absolute; left: 0; top: 100%; margin-top: .35rem; z-index: 30; width: 12rem; padding: .6rem;
-  border-radius: .8rem; background: #16203a; border: 1px solid rgba(255, 255, 255, .18); box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, .5); }
+  border-radius: .8rem; background: #16203a; border: 1px solid var(--line); box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, .5); }
 .tpcols { display: -webkit-flex; display: flex; }
 .tpcol { -webkit-flex: 1; flex: 1; min-width: 0; }
 .tpcol + .tpcol { margin-left: .5rem; }
@@ -685,7 +688,7 @@ html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050
 .mapmode .ptitle { visibility: hidden; }
 .mapmode #hbar.open { display: block; position: absolute; z-index: 35; top: 100%; left: 50%; -webkit-transform: translateX(-50%); transform: translateX(-50%);
   width: -webkit-max-content; width: max-content; max-width: 94vw; padding: .5rem .4rem; border-radius: 1.1rem;
-  background: rgba(14, 22, 42, .94); border: 1px solid rgba(255, 255, 255, .18); box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, .5); }
+  background: rgba(14, 22, 42, .94); border: 1px solid var(--line); box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, .5); }
 header.top { position: relative; }
 #hbar .mbar { margin: 0; }
 #hbar .mbar .seg { margin: .2rem .35rem; }
@@ -730,7 +733,7 @@ header.top { position: relative; }
 /* Globe : lecture / pause (et vitesse au survol), pastille en bas à gauche comme dans Travel Hub */
 .gctl { display: none; }
 .mapbox.globe .gctl { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; position: absolute; z-index: 5; left: 1rem; bottom: 1rem;
-  padding: .25rem; border-radius: 2rem; background: rgba(14, 22, 42, .9); border: 1px solid rgba(255, 255, 255, .18); box-shadow: 0 .6rem 1.6rem rgba(0, 0, 0, .45); }
+  padding: .25rem; border-radius: 2rem; background: rgba(14, 22, 42, .9); border: 1px solid var(--line); box-shadow: 0 .6rem 1.6rem rgba(0, 0, 0, .45); }
 .gctl > button { width: 2.6rem; height: 2.6rem; padding: 0; margin: 0 .1rem; border: 0; border-radius: 50%; background: none; color: #fff;
   display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; }
 .gctl > button .ic { width: 1.05rem; height: 1.05rem; }
@@ -745,11 +748,11 @@ header.top { position: relative; }
 #logview, #bkview { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 200; background: #0a101f; color: #dfe6f5;
   display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column;
   padding-top: 20px; padding-top: max(20px, env(safe-area-inset-top)); }
-#logview header, #bkview header { -webkit-flex: none; flex: none; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; padding: .6rem 1rem; border-bottom: 1px solid var(--line, rgba(255,255,255,.14)); }
+#logview header, #bkview header { -webkit-flex: none; flex: none; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; padding: .6rem 1rem; border-bottom: 1px solid var(--line); }
 #logview h2, #bkview h2 { margin: 0 .8rem 0 0; font-size: 1.15rem; }
 #logview .lgn, #bkview .lgn { -webkit-flex: 1; flex: 1; font-size: .8rem; color: rgba(255, 255, 255, .6); }
 #logview .btn, #bkview .btn { margin-left: .5rem; }
-.bktext { -webkit-flex: 1; flex: 1; min-height: 0; margin: .8rem 1rem 1.2rem; padding: .8rem; border-radius: .7rem; border: 1px solid rgba(255, 255, 255, .18);
+.bktext { -webkit-flex: 1; flex: 1; min-height: 0; margin: .8rem 1rem 1.2rem; padding: .8rem; border-radius: .7rem; border: 1px solid var(--line);
   background: rgba(255, 255, 255, .05); color: #dfe6f5; font-family: Menlo, Consolas, monospace; font-size: 16px; line-height: 1.4; resize: none;
   -webkit-user-select: text; user-select: text; outline: none; }
 .lgbody { -webkit-flex: 1; flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: .6rem 1rem 2rem;
@@ -785,7 +788,7 @@ html.listmode { background: #262d38; }
 .lgrid { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; padding: .2rem .65rem 1rem; }
 .lcard { -webkit-flex: none; flex: none; margin: .35rem; padding: .7rem .95rem .65rem; border-radius: 1.15rem; cursor: pointer; overflow: hidden;
   min-height: 6.3rem; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; -webkit-justify-content: space-between; justify-content: space-between;
-  text-shadow: 0 1px 5px rgba(0, 0, 0, .35); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .13); }
+  text-shadow: 0 1px 5px rgba(0, 0, 0, .35); box-shadow: inset 0 0 0 1px var(--line); }
 .lcard.bright { text-shadow: 0 1px 5px rgba(0, 0, 0, .55); }
 .lcard.cur { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .8); }
 .lgrid.c1 .lcard { width: calc(100% - .7rem); }

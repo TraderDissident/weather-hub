@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.34.8 · 26/11/2026 · Affichage · Une seule couleur de bordure grise
+
+- Toutes les bordures grises de l'app ont la même couleur, pleine (#3a4152, celle des étiquettes de la carte) : carte du monde, cartes de villes, étiquettes, boutons, panneaux, cadran, listes, menus. Avant, elles étaient plus ou moins transparentes selon l'élément, donc de teintes différentes. Les bordures de couleur (alertes) et celles des états (choisi, déplacé) ne changent pas.
+
 ## 1.34.7 · 26/11/2026 · Carte · Marge du haut sur ordinateur
 
 - Sur ordinateur et dans un navigateur, la page gardait en haut une bande de 20 points prévue pour la barre d'état de l'iPad. Contrôles masqués, elle s'ajoutait à la marge du haut. Elle disparaît hors de l'app de l'écran d'accueil : la marge du haut est égale aux autres. Sur l'iPad (écran d'accueil), la marge part de sous la barre d'état.

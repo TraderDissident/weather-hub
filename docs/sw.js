@@ -1,11 +1,11 @@
 /* Garde la coquille de l'app pour démarrer sans réseau. Les données météo ne passent jamais par ici. */
-var VERSION = 'sm-1.34.7';
+var VERSION = 'sm-1.34.8';
 var SHELL = [
-  './', 'index.html', 'css/app.css?v=1.34.7',
-  'js/config.js?v=1.34.7', 'js/diag.js?v=1.34.7', 'js/compat.js?v=1.34.7', 'js/store.js?v=1.34.7', 'js/i18n.js?v=1.34.7',
-  'js/api.js?v=1.34.7', 'js/astro.js?v=1.34.7', 'js/codes.js?v=1.34.7', 'js/comfort.js?v=1.34.7', 'js/icons.js?v=1.34.7', 'js/sky.js?v=1.34.7',
-  'js/ui.js?v=1.34.7', 'js/places.js?v=1.34.7', 'js/settings.js?v=1.34.7', 'js/calib.js?v=1.34.7', 'js/world.js?v=1.34.7', 'js/borders.js?v=1.34.7', 'js/globe.js?v=1.34.7', 'js/map.js?v=1.34.7', 'js/edit.js?v=1.34.7', 'js/list.js?v=1.34.7', 'js/update.js?v=1.34.7', 'js/app.js?v=1.34.7',
-  'socle/installation.css?v=1.34.7', 'socle/installation.js?v=1.34.7',
+  './', 'index.html', 'css/app.css?v=1.34.8',
+  'js/config.js?v=1.34.8', 'js/diag.js?v=1.34.8', 'js/compat.js?v=1.34.8', 'js/store.js?v=1.34.8', 'js/i18n.js?v=1.34.8',
+  'js/api.js?v=1.34.8', 'js/astro.js?v=1.34.8', 'js/codes.js?v=1.34.8', 'js/comfort.js?v=1.34.8', 'js/icons.js?v=1.34.8', 'js/sky.js?v=1.34.8',
+  'js/ui.js?v=1.34.8', 'js/places.js?v=1.34.8', 'js/settings.js?v=1.34.8', 'js/calib.js?v=1.34.8', 'js/world.js?v=1.34.8', 'js/borders.js?v=1.34.8', 'js/globe.js?v=1.34.8', 'js/map.js?v=1.34.8', 'js/edit.js?v=1.34.8', 'js/list.js?v=1.34.8', 'js/update.js?v=1.34.8', 'js/app.js?v=1.34.8',
+  'socle/installation.css?v=1.34.8', 'socle/installation.js?v=1.34.8',
   'img/icon-180.png', 'img/earth-day.jpg', 'img/earth-night.jpg'
 ];
 
