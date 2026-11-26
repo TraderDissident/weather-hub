@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.40.3 · 26/11/2026 · Globe · Points et étiquettes à l'échelle
+
+- Globe en plein écran avec « Place pour l'heure de macOS » : quand le globe rapetisse, ses points (et leur halo) et ses étiquettes rapetissent dans la même proportion. L'écartement des étiquettes en tient compte.
+
 ## 1.40.2 · 26/11/2026 · Globe · Plein écran sans liseré
 
 - Globe en plein écran : plus de liseré autour de l'écran. Hors plein écran, le cadre de la carte et du globe garde son liseré.

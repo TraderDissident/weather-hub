@@ -548,7 +548,7 @@
       if (mk.style.display === 'none') return;
       if (!lab._w || lab._pos !== 'g') { lab.style.display = ''; lab._w = lab.offsetWidth; lab._h = lab.offsetHeight; lab._pos = 'g'; }
       var held = drag && drag.p.lab === lab, m = saved[id];
-      var off = held ? drag.p.off : (m ? [m[0] * R, m[1] * R] : [12, -lab._h / 2]);
+      var gk = st.gk || 1, off = held ? drag.p.off : (m ? [m[0] * R, m[1] * R] : [12 * gk, -lab._h * gk / 2]);
       var x = mk._x, y = mk._y;
       // Étiquette tenue : son point continue de tourner, le trait le suit.
       if (held) { drag.p.x = x; drag.p.y = y; drag.p.box = [x + drag.p.off[0], y + drag.p.off[1], drag.p.w, drag.p.h]; }
@@ -558,7 +558,7 @@
         if (lab.style.top !== t) lab.style.top = t;
         if (lab.style.display) lab.style.display = '';
       }
-      pts.push(held ? drag.p : { id: id, lab: lab, x: x, y: y, w: lab._w, h: lab._h, off: [off[0], off[1], 0, 0], box: [x + off[0], y + off[1], lab._w, lab._h], globe: true });
+      pts.push(held ? drag.p : { id: id, lab: lab, x: x, y: y, w: lab._w * gk, h: lab._h * gk, off: [off[0], off[1], 0, 0], box: [x + off[0], y + off[1], lab._w * gk, lab._h * gk], globe: true });
     });
     globeSpread(pts);
     st.labels = pts;
@@ -613,7 +613,7 @@
     it.forEach(function (o) {
       if (o.held) return;
       var trop = o.trop;
-      var tr = o.dx || o.dy ? 'translate3d(' + o.dx.toFixed(0) + 'px,' + o.dy.toFixed(0) + 'px,0)' : '';
+      var gk = st.gk || 1, tr = (o.dx || o.dy ? 'translate3d(' + o.dx.toFixed(0) + 'px,' + o.dy.toFixed(0) + 'px,0)' : '') + (gk !== 1 ? ' scale(' + gk.toFixed(3) + ')' : '');
       if (o.p.lab.style.transform !== tr) o.p.lab.style.webkitTransform = o.p.lab.style.transform = tr;
       var op = trop ? '0' : '';
       if (o.p.lab.style.opacity !== op) o.p.lab.style.opacity = op;
@@ -1108,6 +1108,9 @@
        et rapetisse pour tenir dans la hauteur qui reste (Matt, 26/11 : « décale le globe, mais pas l'espace en entier »). */
     st.gy = gfull ? reserve / 2 : 0;
     st.gsize = gfull ? Math.min(W, H - reserve) : 0;
+    /* Échelle des points et des étiquettes du globe : quand le globe rapetisse pour laisser la place à l'heure de
+       macOS, ils rapetissent dans la même proportion (Matt, 26/11 : « que les % suivent l'affichage global »). */
+    st.gk = gfull && reserve ? st.gsize / Math.max(1, Math.min(W, H)) : 1;
     st.box.style.setProperty('--osr', (gfull ? reserve : 0) + 'px');
     if (lay) {
       // Reste de hauteur (carte plate aux bornes de latitude) : partagé au-dessus et au-dessous, la marge reste égale.
@@ -1344,6 +1347,7 @@
   function dotSize() {
     if (!st.box || !st.w) return;
     var k = dotScale();
+    k *= st.view === 'globe' ? (st.gk || 1) : 1;
     st.box.style.setProperty('--dot', Math.max(3, Math.round(U.clamp(st.w * 0.0121, 6, 14) * k)) + 'px');
     st.box.style.setProperty('--dotk', String(k));
   }
