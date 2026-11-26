@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.34.6 · 26/11/2026 · Carte · Marge du haut égale aux autres
+
+- La marge du haut se mesure maintenant jusqu'aux chiffres des heures, et plus jusqu'au haut de leur bande (les chiffres sont en bas de la bande, d'où une marge visible trop grande). Elle est égale aux marges de gauche, de droite et du bas, contrôles affichés ou masqués.
+
 ## 1.34.5 · 26/11/2026 · Carte · Coupée au détroit de Béring
 
 - La carte plate est coupée au détroit de Béring (169° O) au lieu de 172,5° O : la pointe de la Russie (Tchoukotka) n'apparaît plus au bord gauche, toute l'Asie est à droite. La règle des heures suit la coupure : le fuseau UTC−11 est un peu coupé à gauche et son reste revient au bord droit.

@@ -1003,7 +1003,11 @@
       var app0 = document.getElementById('app'), card0 = U.$('.mcard', bottom), cardsH = card0 ? card0.offsetHeight : bottom.offsetHeight;
       var hb = U.$('header.top .iconbtn', app0), viewTop = st.root.getBoundingClientRect().top;
       topY = app0.className.indexOf(' nochrome') >= 0 || !hb ? padM : Math.max(0, hb.getBoundingClientRect().bottom - viewTop + padM);
-      landH = st.root.clientHeight - topY - U.$('.zones', st.root).offsetHeight - padM - cardsH - padM;
+      /* Les chiffres des heures sont en bas de leur bande : le vide au-dessus d'eux compte dans la marge du haut. */
+      var zEl = U.$('.zones', st.root), zTop = zEl.getBoundingClientRect().top, inTop = zEl.offsetHeight;
+      U.$$('span', zEl).forEach(function (sp) { if (sp.offsetHeight) inTop = Math.min(inTop, sp.getBoundingClientRect().top - zTop); });
+      topY = Math.max(0, topY - inTop);
+      landH = st.root.clientHeight - topY - zEl.offsetHeight - padM - cardsH - padM;
       if (st.view === 'map') { var fb = fitLat(landH / Math.max(availW, 1)); north = fb[0]; south = fb[1]; }
     } else if (land && !full && st.view === 'map') { var sf = southFor(landH / Math.max(availW, 1)); if (sf !== null) south = sf; }
     if (north !== LAT_N || south !== LAT_S) { setNorth(north, south); force = true; placeMarkers(); }
