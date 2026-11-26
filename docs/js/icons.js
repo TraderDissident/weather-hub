@@ -104,6 +104,8 @@
     card: '<rect class="icl" x="3" y="6" width="18" height="12" rx="2.2"/><rect class="icp" x="6" y="3" width="12" height="18" rx="2.2"/>',
     grip: '<path d="M5 8h14M5 12h14M5 16h14"/>',
     smile: '<circle cx="12" cy="12" r="9"/><path d="M8.5 14.2a4.2 4.2 0 0 0 7 0"/><path d="M9 9.8h.01M15 9.8h.01" stroke-width="2.4"/>',
+    // Mosaïque : quatre tuiles (l'ancienne icône, trois lignes à puces, se lisait « liste »).
+    grid: '<rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/>',
     list: '<path d="M9 6.5h11M9 12h11M9 17.5h11" stroke-width="2"/><circle cx="4.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="17.5" r="1.2" fill="currentColor" stroke="none"/>',
     arrowUp: '<path d="M12 20V5M6 10.5L12 4.5l6 6" stroke-width="2.2"/>',
     arrowDown: '<path d="M12 4v15M6 13.5l6 6 6-6" stroke-width="2.2"/>',

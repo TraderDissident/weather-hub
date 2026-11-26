@@ -183,7 +183,7 @@
       });
     } else {
       var before = [].slice.call(el.pages.children);
-      SM.map.render(el.pages, A.places, true);
+      SM.map.render(el.pages, A.ordered('map'), true);
       before.forEach(release);
       // Les sélecteurs (style, carte ou globe, horloges ou météo) montent dans l'en-tête, à la place du titre :
       // la carte gagne leur hauteur. La carte se recalcule ensuite avec la place libérée.
@@ -206,7 +206,7 @@
     SM.sky.pause(true);
     var was = U.$('.listview', el.pages), y = was ? was.scrollTop : 0;
     var before = [].slice.call(el.pages.children);
-    el.pages.innerHTML = SM.list.html(A.places, nowMs(), p && p.id, isLand());
+    el.pages.innerHTML = SM.list.html(A.ordered('list'), nowMs(), p && p.id, isLand());
     before.forEach(release);
     SM.list.fit(el.pages);
     if (y) U.$('.listview', el.pages).scrollTop = y;
@@ -221,7 +221,7 @@
   var listT = 0;
   function listRefreshSoon() {
     if (listT) return;
-    listT = setTimeout(function () { listT = 0; if (A.mode === 'list' && !A.sheet) SM.list.update(el.pages, A.places, nowMs()); }, 1500);
+    listT = setTimeout(function () { listT = 0; if (A.mode === 'list' && !A.sheet) SM.list.update(el.pages, A.ordered('list'), nowMs()); }, 1500);
   }
 
   // Conteneurs d'un écran que le code touche (donc qui retiendraient leur contenu), du plus profond au plus haut.
@@ -438,7 +438,7 @@
     // Pas de nouveau rendu pendant qu'un bloc est tenu au doigt.
     if (SM.edit && SM.edit.dragging) return;
     if (A.mode === 'map') { if (SM.map) SM.map.tick(false); return; }
-    if (A.mode === 'list') { SM.list.tick(el.pages, A.places, nowMs()); return; }
+    if (A.mode === 'list') { SM.list.tick(el.pages, A.ordered('list'), nowMs()); return; }
     var w = A.data[p.id];
     var wl = I.wall(Math.floor(nowMs() / 1000), (w && w.tz) || p.tz, w ? w.offset : 0);
     // Écrire un texte identique oblige quand même l'iPad à recalculer et repeindre : on n'écrit que ce qui change.
@@ -637,6 +637,24 @@
     }, Promise.resolve());
   }
   A.nowMs = function () { return nowMs(); };
+
+  /* Chaque vue a son ordre des lieux, réglé dans la feuille Lieux (onglets) : 'place' (les villes une à une : l'ordre
+     de A.places, comme avant), 'list' (mosaïque), 'map' (carte et globe). Sans ordre enregistré, une vue suit celui
+     des villes ; un lieu ajouté depuis se place à la fin. */
+  A.ordered = function (view) {
+    var ids = view === 'place' ? null : SM.store.order(view);
+    if (!ids) return A.places;
+    var by = {}, out = [];
+    A.places.forEach(function (p) { by[p.id] = p; });
+    ids.forEach(function (id) { if (by[id]) { out.push(by[id]); delete by[id]; } });
+    A.places.forEach(function (p) { if (by[p.id]) out.push(p); });
+    return out;
+  };
+  A.setOrder = function (view, list) {
+    if (view === 'place') { A.setPlaces(list); return; }
+    SM.store.saveOrder(view, list.map(function (p) { return p.id; }));
+    sheetDirty = true;
+  };
 
   A.setPlaces = function (list) {
     var cur = A.places[A.idx] && A.places[A.idx].id;
@@ -865,7 +883,7 @@
     var p = A.places[A.idx];
     if (A.mode === 'map') loadAll();
     // La liste est redessinée chaque minute : le ciel de chaque carte suit l'heure.
-    else if (A.mode === 'list') { loadAll(); if (!A.sheet) SM.list.update(el.pages, A.places, nowMs()); }
+    else if (A.mode === 'list') { loadAll(); if (!A.sheet) SM.list.update(el.pages, A.ordered('list'), nowMs()); }
     else if (p) {
       load(p);
       var w = A.data[p.id];
@@ -1071,7 +1089,7 @@
           '<div class="hside r"><button class="iconbtn mapctl" data-act="mapctl" aria-label="Map options">' + IC.ui('sliders') + '</button>' +
           '<button class="iconbtn mapctl" data-act="mapfull" aria-label="Full screen">' + IC.ui('expand') + '</button>' +
           '<button class="iconbtn" data-act="place" aria-label="City">' + IC.ui('card') + '</button>' +
-          '<button class="iconbtn" data-act="list" aria-label="All places">' + IC.ui('list') + '</button>' +
+          '<button class="iconbtn" data-act="list" aria-label="All places">' + IC.ui('grid') + '</button>' +
           '<button class="iconbtn" data-act="map" aria-label="Map">' + IC.ui('globe') + '</button>' +
           '<button class="iconbtn" data-sheet="settings" aria-label="Settings">' + IC.ui('gear') + '</button></div>' +
         '</header>' +

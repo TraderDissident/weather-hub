@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.35.0 · 26/11/2026 · Lieux · Un ordre par vue
+
+- Feuille Lieux : trois onglets, Villes, Mosaïque, Carte et globe. Chaque vue a son propre ordre des lieux, réglé en glissant les lignes par leur poignée ; changer l'un ne touche pas aux autres. La feuille s'ouvre sur l'onglet de la vue affichée. Tant qu'une vue n'a pas été réordonnée, elle suit l'ordre des villes. Étoile, corbeille et ajout valent pour toutes les vues.
+- Le bouton de la mosaïque porte une icône de mosaïque (quatre tuiles) au lieu de trois lignes à puces, qui se lisaient comme une liste.
+
 ## 1.34.8 · 26/11/2026 · Affichage · Une seule couleur de bordure grise
 
 - Toutes les bordures grises de l'app ont la même couleur, pleine (#3a4152, celle des étiquettes de la carte) : carte du monde, cartes de villes, étiquettes, boutons, panneaux, cadran, listes, menus. Avant, elles étaient plus ou moins transparentes selon l'élément, donc de teintes différentes. Les bordures de couleur (alertes) et celles des états (choisi, déplacé) ne changent pas.

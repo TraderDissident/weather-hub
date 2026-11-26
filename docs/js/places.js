@@ -2,6 +2,8 @@
 (function () {
   var U = SM.U, I = SM.i18n, IC = SM.icons;
   var body, timer = 0, lastQuery = '', results = [];
+  // Onglet de la feuille : la vue dont on règle l'ordre ('place', 'list' ou 'map'). À l'ouverture : la vue affichée.
+  var tab = 'place';
 
   function t() { return I.t(); }
 
@@ -54,11 +56,11 @@
     d.row.style.webkitTransform = d.row.style.transform = '';
     d.row.className = 'prow';
     var ids = [].map.call(d.list.querySelectorAll('.prow'), function (r) { return r.getAttribute('data-id'); });
-    var by = {};
+    var by = {}, cur = SM.app.ordered(tab);
     SM.app.places.forEach(function (p) { by[p.id] = p; });
     var list = ids.map(function (id) { return by[id]; }).filter(Boolean);
-    var same = list.length === SM.app.places.length && list.every(function (p, k) { return p === SM.app.places[k]; });
-    if (!same) SM.app.setPlaces(list);
+    var same = list.length === cur.length && list.every(function (p, k) { return p === cur[k]; });
+    if (!same) SM.app.setOrder(tab, list);
   }
   // Non passifs sur le corps de la feuille seulement (voir config.js) : ailleurs, aucun toucher n'attend la page.
   function bindTouch(el) {
@@ -74,7 +76,7 @@
   document.addEventListener('mouseup', pEnd);
 
   function listHTML() {
-    var tt = t(), places = SM.app.places, start = SM.store.startPlace() || places[0].id;
+    var tt = t(), places = SM.app.ordered(tab), start = SM.store.startPlace() || SM.app.places[0].id;
     return places.map(function (p, i) {
       return '<div class="prow" data-id="' + U.esc(p.id) + '">' +
         '<button class="mini star' + (p.id === start ? ' on' : '') + '" data-act="start" title="' + U.esc(tt.startHere) + '">' + IC.ui('star') + '</button>' +
@@ -83,6 +85,14 @@
         '<span class="grip" aria-label="' + U.esc(tt.reorder) + '">' + IC.ui('grip') + '</span>' +
       '</div>';
     }).join('');
+  }
+
+  // Trois onglets : l'ordre des lieux se règle vue par vue. Étoile, corbeille et ajout valent pour toutes les vues.
+  function tabsHTML() {
+    var tt = t();
+    return '<div class="seg ptabs">' + [['place', tt.tabCity], ['list', tt.tabList], ['map', tt.tabMap]].map(function (o) {
+      return '<button data-ptab="' + o[0] + '"' + (o[0] === tab ? ' class="on"' : '') + '>' + U.esc(o[1]) + '</button>';
+    }).join('') + '</div><p class="hint ptabhint">' + U.esc(tt.tabHint) + '</p>';
   }
 
   function resultsHTML(state) {
@@ -109,7 +119,7 @@
     body.innerHTML =
       '<div class="searchbox">' + IC.ui('search') + '<input class="search" type="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="' + U.esc(tt.search) + '" value="' + U.esc(lastQuery) + '"></div>' +
       '<div class="results">' + resultsHTML() + '</div>' +
-      '<div class="plist">' + listHTML() + '</div>';
+      tabsHTML() + '<div class="plist">' + listHTML() + '</div>';
     var input = U.$('input', body);
     input.addEventListener('input', function () {
       clearTimeout(timer);
@@ -149,6 +159,13 @@
       refreshList();
       return;
     }
+    var tb = e.target.closest('[data-ptab]');
+    if (tb) {
+      tab = tb.getAttribute('data-ptab');
+      U.$$('[data-ptab]', body).forEach(function (x) { x.className = x === tb ? 'on' : ''; });
+      refreshList();
+      return;
+    }
     var btn = e.target.closest('[data-act]');
     if (!btn) return;
     var row = btn.closest('.prow'), id = row.getAttribute('data-id'), act = btn.getAttribute('data-act');
@@ -171,6 +188,7 @@
     open: function (b) {
       body = b;
       results = []; lastQuery = '';
+      tab = SM.app.mode === 'list' || SM.app.mode === 'map' ? SM.app.mode : 'place';
       render();
       body.onclick = onClick;
       bindTouch(body);

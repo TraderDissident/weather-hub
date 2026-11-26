@@ -42,6 +42,9 @@
     return p;
   };
   S.savePlaces = function (list) { write('sm.places', list); };
+  // Ordre des lieux propre à une vue ('list' : mosaïque, 'map' : carte et globe) : liste d'identifiants, ou null.
+  S.order = function (view) { var o = read('sm.order.' + view, null); return o && o.length ? o : null; };
+  S.saveOrder = function (view, ids) { write('sm.order.' + view, ids); };
 
   S.settings = function () {
     var s = read('sm.settings', {});
