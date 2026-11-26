@@ -113,6 +113,8 @@ header.top {
 .hside { -webkit-flex: 1; flex: 1; display: -webkit-flex; display: flex; }
 .hside.r { -webkit-justify-content: flex-end; justify-content: flex-end; }
 .hside.r .iconbtn { margin-left: .6rem; }
+/* Les réglages se détachent un peu des trois boutons de vue (ville, mosaïque, carte). */
+.hside.r .iconbtn[data-sheet=settings] { margin-left: 1.3rem; }
 .iconbtn.on { background: #fff; color: #0b1226; border-color: #fff; }
 .ptitle { text-align: center; text-shadow: 0 1px 6px rgba(0, 0, 0, .3); -webkit-flex: none; flex: none; max-width: 60%; }
 #pname { font-size: 1.45rem; font-weight: 600; letter-spacing: .01em; }
@@ -935,6 +937,7 @@ html.phone #hbar { -webkit-order: 4; order: 4; width: 100%; }
 html.phone .iconbtn { width: 44px; height: 44px; }
 html.phone .iconbtn .ic { width: 22px; height: 22px; }
 html.phone .hside.r .iconbtn { margin-left: 8px; }
+html.phone .hside.r .iconbtn[data-sheet=settings] { margin-left: 16px; }
 html.phone #pname { font-size: 22px; }
 html.phone #dots { height: 12px; margin-top: 6px; pointer-events: none; }
 

@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.35.1 · 26/11/2026 · En-tête · Réglages détachés des vues
+
+- Un peu plus d'espace entre les trois boutons de vue (ville, mosaïque, carte) et le bouton des réglages : environ le double de l'écart entre les autres boutons.
+
 ## 1.35.0 · 26/11/2026 · Lieux · Un ordre par vue
 
 - Feuille Lieux : trois onglets, Villes, Mosaïque, Carte et globe. Chaque vue a son propre ordre des lieux, réglé en glissant les lignes par leur poignée ; changer l'un ne touche pas aux autres. La feuille s'ouvre sur l'onglet de la vue affichée. Tant qu'une vue n'a pas été réordonnée, elle suit l'ordre des villes. Étoile, corbeille et ajout valent pour toutes les vues.
