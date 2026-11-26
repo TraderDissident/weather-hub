@@ -4,8 +4,10 @@
   var U = SM.U, I = SM.i18n, IC = SM.icons, CO = SM.codes;
   var PI = Math.PI, RAD = PI / 180;
 
-  /* ---------- projection de Miller, de 75° N à 58° S, coupée à 172,5° O pour aligner les fuseaux ---------- */
-  var LON0 = -172.5, LAT_N = 75, LAT_S = -58;
+  /* ---------- projection de Miller, de 75° N à 58° S, coupée au détroit de Béring (169° O) ---------- */
+  /* Coupée avant à 172,5° O, une bordure de fuseau : un bout de la Tchoukotka (Russie) restait au bord gauche (Matt,
+     26/11). La règle des heures suit la coupure (rulerHTML). */
+  var LON0 = -169, LAT_N = 75, LAT_S = -58;
   function miller(lat) { return 1.25 * Math.log(Math.tan(PI / 4 + 0.4 * lat * RAD)); }
   var MT = miller(LAT_N), MB = miller(LAT_S);
   var ASPECT = (MT - MB) / (2 * PI), ASPECT0 = ASPECT;
@@ -802,9 +804,13 @@
   document.addEventListener('touchcancel', dragEnd, { passive: true });
 
   /* ---------- règle des fuseaux ---------- */
+  /* 24 fuseaux de 15°, le premier (UTC−11) commençant à 172,5° O. La carte commence à LON0 : le premier fuseau est
+     coupé à gauche et son reste revient au bord droit (même heure, trop étroit pour un chiffre). */
   function rulerHTML() {
-    var s = '';
-    for (var k = 0; k < 24; k++) s += '<span data-z="' + (k - 11) + '"></span>';
+    var off = ((LON0 + 172.5) % 15 + 15) % 15, s = '';
+    var span = function (z, w, blank) { return '<span data-z="' + z + '" style="-webkit-flex:' + w + ' 1 0;flex:' + w + ' 1 0' + (blank ? ';visibility:hidden' : '') + '"></span>'; };
+    for (var k = 0; k < 24; k++) s += span(k - 11, k ? 15 : 15 - off, false);
+    if (off) s += span(-11, off, true);
     return s;
   }
   function updateRuler(ms) {

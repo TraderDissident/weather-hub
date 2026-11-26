@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.34.5 · 26/11/2026 · Carte · Coupée au détroit de Béring
+
+- La carte plate est coupée au détroit de Béring (169° O) au lieu de 172,5° O : la pointe de la Russie (Tchoukotka) n'apparaît plus au bord gauche, toute l'Asie est à droite. La règle des heures suit la coupure : le fuseau UTC−11 est un peu coupé à gauche et son reste revient au bord droit.
+
 ## 1.34.4 · 26/11/2026 · Carte · Marges égales, toute la hauteur
 
 - En paysage, une seule marge partout autour de la carte : à gauche, à droite, sous les boutons, entre la carte et les cartes de villes, et sous les cartes de villes (elle était plus grande en bas).
