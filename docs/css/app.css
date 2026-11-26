@@ -686,6 +686,9 @@ html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050
 .port .mkt small { font-size: .58rem; }
 /* Étiquettes de la carte déplaçables à la main */
 .mapbox:not(.globe) .mkl { cursor: grab; touch-action: none; }
+/* Globe : écartement des étiquettes qui se chevauchent (voir globeSpread dans map.js), en glissant. */
+.mapbox.globe .mkl { -webkit-transition: -webkit-transform .25s ease-out, opacity .25s; transition: transform .25s ease-out, opacity .25s; }
+.mapbox:not(.globe) .mkl { -webkit-transform: none !important; transform: none !important; opacity: 1 !important; }
 .mkl.dragging { cursor: grabbing; z-index: 10; box-shadow: 0 .8rem 2rem rgba(0, 0, 0, .55); border-color: rgba(255, 255, 255, .45); }
 
 /* Champ d'heure de Travel Hub : bouton à horloge, deux colonnes heures et minutes. */

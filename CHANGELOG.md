@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.40.0 · 26/11/2026 · Globe · Étiquettes qui s'écartent
+
+- Globe : les étiquettes qui se chevauchent s'écartent de quelques points en glissant, puis reviennent à leur place quand la gêne disparaît (chaque étiquette repart de sa place de référence à chaque image, l'écart ne s'accumule jamais). La ville la plus proche du centre garde sa place ; un trait relie l'étiquette écartée à son point. Au-delà de 60 points, l'étiquette s'estompe. Rien n'est enregistré ; la carte plate ne change pas.
+
 ## 1.39.1 · 26/11/2026 · Globe · Place pour l'heure de macOS, fond entier
 
 - Avec « Place pour l'heure de macOS », le globe en plein écran descend et rapetisse pour tenir sous la place réservée, mais le ciel étoilé garde tout l'écran. Les points, les étiquettes et l'horloge du globe suivent.

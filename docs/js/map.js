@@ -560,8 +560,67 @@
       }
       pts.push(held ? drag.p : { id: id, lab: lab, x: x, y: y, w: lab._w, h: lab._h, off: [off[0], off[1], 0, 0], box: [x + off[0], y + off[1], lab._w, lab._h], globe: true });
     });
+    globeSpread(pts);
     st.labels = pts;
     drawLines();
+  }
+
+  /* Écartement des étiquettes du globe (Matt, 26/11 : en tournant, elles finissaient par se chevaucher).
+     - Remise à zéro à chaque image : chaque étiquette repart de sa place de référence (réglée à la main, sinon à
+       droite de son point) ; l'écart ne s'accumule jamais, et l'étiquette revient seule quand la gêne disparaît.
+     - Pour chaque paire qui se chevauche (plus 4 points de marge), la ville la plus éloignée du centre du globe (la
+       moins lisible) s'écarte du strict nécessaire, dans le sens où le chevauchement est le plus faible. Six passes.
+     - 60 points au plus ; au-delà, l'étiquette s'estompe. L'étiquette tenue au doigt ne bouge pas.
+     - Le décalage passe par une transformation animée (CSS, un quart de seconde) : glissement sans à-coup, sans mise
+       en page. Rien n'est enregistré : les positions réglées à la main restent celles de Matt. */
+  var SPREAD_GAP = 4, SPREAD_MAX = 60;
+  function globeSpread(pts) {
+    var cx = st.w / 2, cy = st.h / 2 + (st.gy || 0), n = pts.length, i, j, k;
+    var it = pts.map(function (p) {
+      var held = drag && drag.p === p;
+      return { p: p, held: held, bx: p.box[0], by: p.box[1], w: p.box[2], h: p.box[3], dx: 0, dy: 0,
+        rang: held ? -1 : Math.hypot(p.x - cx, p.y - cy) };
+    });
+    for (k = 0; k < 6; k++) {
+      for (i = 0; i < n; i++) for (j = i + 1; j < n; j++) {
+        var a = it[i], b = it[j];
+        var ox = Math.min(a.bx + a.dx + a.w, b.bx + b.dx + b.w) - Math.max(a.bx + a.dx, b.bx + b.dx) + SPREAD_GAP;
+        var oy = Math.min(a.by + a.dy + a.h, b.by + b.dy + b.h) - Math.max(a.by + a.dy, b.by + b.dy) + SPREAD_GAP;
+        if (ox <= 0 || oy <= 0) continue;
+        // Celle qui bouge : la plus loin du centre (jamais celle qu'on tient).
+        var m = a.rang > b.rang ? a : b, f = m === a ? b : a;
+        if (m.held) { m = f; f = m === a ? b : a; }
+        if (m.held) continue;
+        if (oy <= ox) m.dy += (m.by + m.dy + m.h / 2 >= f.by + f.dy + f.h / 2 ? 1 : -1) * oy;
+        else m.dx += (m.bx + m.dx + m.w / 2 >= f.bx + f.dx + f.w / 2 ? 1 : -1) * ox;
+      }
+    }
+    // Écart borné à SPREAD_MAX ; une étiquette qui chevauche encore une étiquette plus centrale s'estompe.
+    it.forEach(function (o) {
+      var d = Math.hypot(o.dx, o.dy);
+      o.trop = !o.held && d > SPREAD_MAX;
+      if (o.trop) { o.dx *= SPREAD_MAX / d; o.dy *= SPREAD_MAX / d; }
+    });
+    var ordre = it.slice().sort(function (a, b) { return a.rang - b.rang; });
+    ordre.forEach(function (o, q) {
+      if (o.held) return;
+      for (var r = 0; r < q && !o.trop; r++) {
+        var f = ordre[r];
+        if (f.trop) continue;
+        if (o.bx + o.dx < f.bx + f.dx + f.w && f.bx + f.dx < o.bx + o.dx + o.w && o.by + o.dy < f.by + f.dy + f.h && f.by + f.dy < o.by + o.dy + o.h) o.trop = true;
+      }
+    });
+    it.forEach(function (o) {
+      if (o.held) return;
+      var trop = o.trop;
+      var tr = o.dx || o.dy ? 'translate3d(' + o.dx.toFixed(0) + 'px,' + o.dy.toFixed(0) + 'px,0)' : '';
+      if (o.p.lab.style.transform !== tr) o.p.lab.style.webkitTransform = o.p.lab.style.transform = tr;
+      var op = trop ? '0' : '';
+      if (o.p.lab.style.opacity !== op) o.p.lab.style.opacity = op;
+      o.p.off = [o.p.off[0] + o.dx, o.p.off[1] + o.dy, 0, 0];
+      o.p.box = [o.bx + o.dx, o.by + o.dy, o.w, o.h];
+      if (trop) o.p.box = null;   // estompée : pas de trait
+    });
   }
 
   /* Étiquettes : placées autour de leur point (à droite, à gauche, au-dessus, au-dessous, puis de plus en plus loin
