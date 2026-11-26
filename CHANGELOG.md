@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.33.0 · 26/11/2026 · Carte · Taille des points réglable
+
+- Réglages : nouveau curseur « Taille des points de la carte », de 0,4 à 3 fois la taille actuelle (de 5 à 36 points sur l'iPad au lieu de 12). L'anneau qui clignote et le halo de nuit suivent. Le réglage est propre à chaque appareil : il ne part pas dans la sauvegarde et n'est pas remplacé par un import. Sans réglage, rien ne change.
+
 ## 1.32.9 · 26/11/2026 · Ciel · Halo de la lune et du soleil rétabli
 
 - La 1.32.8 peignait le halo de la lune et du soleil dans la couche de l'astre : sur l'iPad (iOS 12), il s'affichait en carré de couleurs arc-en-ciel. Le halo reprend sa forme de la 1.32.7 (peint au quart de sa taille, agrandi par la carte graphique dans sa propre couche). Les autres allègements de la 1.32.8 (étoiles, gouttes, éclair, flash) restent.

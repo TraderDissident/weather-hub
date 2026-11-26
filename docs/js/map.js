@@ -975,8 +975,7 @@
     st.pr = Math.min(window.devicePixelRatio || 1, 1.5);
     U.$('.zones', st.root).style.width = W + 'px';
     st.box.style.width = W + 'px'; st.box.style.height = H + 'px';
-    // Points des lieux proportionnels à la carte : 1,2 % de sa largeur (12 points sur l'iPad), entre 6 et 14 points.
-    st.box.style.setProperty('--dot', Math.round(U.clamp(W * 0.0121, 6, 14)) + 'px');
+    dotSize();
     st.cv.width = Math.round(W * st.pr); st.cv.height = Math.round(H * st.pr);
     st.cv.style.width = W + 'px'; st.cv.style.height = H + 'px';
     st.box.className = 'mapbox' + (st.view === 'globe' ? ' globe' : '');
@@ -1117,6 +1116,24 @@
     if (b.hasAttribute('data-dcolor')) M.refresh();
     e.stopPropagation();
   }, true);
+
+  /* Points des lieux proportionnels à la carte : 1,2 % de sa largeur (12 points sur l'iPad), entre 6 et 14 points,
+     multipliés par le réglage « Taille des points » (Réglages, de ×0,4 à ×3). Ce réglage est propre à l'appareil :
+     il est rangé à part (sm.dotScale) et ne part pas dans la sauvegarde. L'anneau qui clignote et le halo de nuit
+     suivent le même facteur. */
+  var DOT_MIN = 0.4, DOT_MAX = 3;
+  function dotScale() { var v = parseFloat(spinPref('sm.dotScale', '1')); return v >= DOT_MIN && v <= DOT_MAX ? v : 1; }
+  function dotSize() {
+    if (!st.box || !st.w) return;
+    var k = dotScale();
+    st.box.style.setProperty('--dot', Math.max(3, Math.round(U.clamp(st.w * 0.0121, 6, 14) * k)) + 'px');
+    st.box.style.setProperty('--dotk', String(k));
+  }
+  M.dotScale = dotScale;
+  M.setDotScale = function (k) {
+    try { localStorage.setItem('sm.dotScale', String(U.clamp(k, DOT_MIN, DOT_MAX))); } catch (e) { /* rien */ }
+    dotSize();
+  };
 
   M.labelDragging = function () { return !!(drag && drag.moved) || Date.now() - draggedAt < 400; };
   SM.map = M;

@@ -43,6 +43,10 @@
     // Opacité du voile noir posé sur l'écran la nuit : à gauche l'écran reste plus clair, à droite il s'assombrit.
     if (s.veil !== 'off') html += field(tt.level, '<input type="range" class="vrange" data-key="veilLevel" min="0.2" max="0.85" step="0.05" value="' + s.veilLevel + '">' +
       '<div class="vends"><span>' + U.esc(tt.lighter) + '</span><span>' + U.esc(tt.darker) + '</span></div>');
+    // Taille des points des lieux sur la carte et le globe : propre à cet appareil (voir dotSize() dans map.js).
+    var dk = SM.map && SM.map.dotScale ? SM.map.dotScale() : 1;
+    html += field(tt.dotSize, '<input type="range" class="vrange" data-dot="1" min="0.4" max="3" step="0.1" value="' + dk + '">' +
+      '<div class="vends"><span>' + U.esc(tt.smaller) + '</span><span>' + U.esc(tt.bigger) + '</span></div>');
     html +=
       field(tt.motion, seg('motion', [['auto', tt.auto], ['reduced', tt.reduced], ['off', tt.motionOff]], s.motion)) +
       field(tt.seconds, seg('seconds', [[true, tt.yes], [false, tt.no]], s.seconds)) +
@@ -110,6 +114,10 @@
       if (pop) pop.parentNode.removeChild(pop);
     };
     U.$$('.vrange', body).forEach(function (r) {
+      if (r.hasAttribute('data-dot')) {
+        r.oninput = r.onchange = function () { if (SM.map && SM.map.setDotScale) SM.map.setDotScale(parseFloat(r.value)); };
+        return;
+      }
       var key = r.getAttribute('data-key') || 'veilLevel';
       var save = function () { SM.app.setSetting(key, parseFloat(r.value)); };
       r.oninput = save; r.onchange = save;
@@ -226,12 +234,12 @@
   /* ---------- sauvegarde : export et import ---------- */
   /* Tout ce qui est propre à Matt : lieux et leur ordre, lieu de démarrage, réglages, blocs de détails, vue, réglages
      de la carte et du globe (style, vue, cartes du bas, plein écran, rotation, points), étiquettes placées à la main.
-     Laissé de côté : la météo en mémoire, le journal et ce qui dépend de l'appareil (taille de la carte). */
+     Laissé de côté : la météo en mémoire, le journal et ce qui dépend de l'appareil (taille de la carte, taille des points). */
   function backupKeys() {
     var out = [];
     for (var i = 0; i < localStorage.length; i++) {
       var k = localStorage.key(i);
-      if (k && k.indexOf('sm.') === 0 && !/^sm\.(w\.|log|alive|mapSize)/.test(k)) out.push(k);
+      if (k && k.indexOf('sm.') === 0 && !/^sm\.(w\.|log|alive|mapSize|dotScale)/.test(k)) out.push(k);
     }
     return out.sort();
   }
@@ -276,7 +284,7 @@
     var tt = t(), obj = null;
     try { obj = JSON.parse(text); } catch (e) { obj = null; }
     var data = obj && obj.app === 'station-meteo' && obj.data;
-    var keys = data ? Object.keys(data).filter(function (k) { return k.indexOf('sm.') === 0 && !/^sm\.(w\.|log|alive|mapSize)/.test(k) && typeof data[k] === 'string'; }) : [];
+    var keys = data ? Object.keys(data).filter(function (k) { return k.indexOf('sm.') === 0 && !/^sm\.(w\.|log|alive|mapSize|dotScale)/.test(k) && typeof data[k] === 'string'; }) : [];
     if (!keys.length) { btn.textContent = tt.importBad; setTimeout(function () { btn.textContent = tt.importApply; }, 2500); return; }
     var places = null;
     try { places = JSON.parse(data['sm.places'] || 'null'); } catch (e) { places = null; }

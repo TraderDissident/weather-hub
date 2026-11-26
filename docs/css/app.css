@@ -479,13 +479,16 @@ html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050
 .mapbox .gcv { position: absolute; left: 50%; top: 50%; z-index: 1; cursor: grab; touch-action: none; }
 .mapbox.globe .mapcredit { z-index: 4; }
 .mk { position: absolute; width: 0; height: 0; cursor: pointer; }
-.mk.night::before { content: ""; position: absolute; width: 2.6rem; height: 2.6rem; margin: -1.3rem 0 0 -1.3rem; border-radius: 50%;
+.mk.night::before { content: ""; position: absolute; width: calc(2.6rem * var(--dotk, 1)); height: calc(2.6rem * var(--dotk, 1));
+  margin: calc(-1.3rem * var(--dotk, 1)) 0 0 calc(-1.3rem * var(--dotk, 1)); border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 200, 110, .55) 0%, rgba(255, 170, 70, .18) 40%, rgba(255, 160, 60, 0) 70%); }
-/* Taille des points : une part de la largeur de la carte (--dot, posée à chaque mise en page), 12 points sur l'iPad. */
+/* Taille des points : une part de la largeur de la carte (--dot, posée à chaque mise en page), 12 points sur l'iPad,
+   fois le réglage de l'appareil (--dotk, voir dotSize() dans map.js). */
 .mkd { position: absolute; width: var(--dot, 12px); height: var(--dot, 12px); margin: calc(var(--dot, 12px) / -2) 0 0 calc(var(--dot, 12px) / -2); border-radius: 50%; box-shadow: 0 0 .5rem rgba(0, 0, 0, .5); }
 .noblink .mkp { display: none; }
 .nohalo .mk.night::before { display: none; }
-.mkp { position: absolute; width: 1.8rem; height: 1.8rem; margin: -.9rem 0 0 -.9rem; border-radius: 50%; border: 2px solid #fff; opacity: 0;
+.mkp { position: absolute; width: calc(1.8rem * var(--dotk, 1)); height: calc(1.8rem * var(--dotk, 1));
+  margin: calc(-.9rem * var(--dotk, 1)) 0 0 calc(-.9rem * var(--dotk, 1)); border-radius: 50%; border: 2px solid #fff; opacity: 0;
   -webkit-animation: ping 2.6s ease-out infinite; animation: ping 2.6s ease-out infinite; }
 .mkl { position: absolute; left: .75rem; top: -1.3rem; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center;
   padding: .22rem .54rem .22rem .27rem; border-radius: .72rem; white-space: nowrap;
