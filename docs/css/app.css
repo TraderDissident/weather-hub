@@ -492,10 +492,10 @@ html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050
 .gclock { display: none; position: absolute; z-index: 5; }
 .mapfull .mapbox.globe .gclock.on { display: block; }
 .gclock .mcard { margin: 0; }
-.gclock.pos-tl { top: 1rem; left: 1rem; } .gclock.pos-tr { top: 1rem; right: 1rem; }
+.gclock.pos-tl { top: calc(1rem + var(--osr, 0px)); left: 1rem; } .gclock.pos-tr { top: calc(1rem + var(--osr, 0px)); right: 1rem; }
 .gclock.pos-br { bottom: 1rem; right: 1rem; } .gclock.pos-bl { bottom: 4.6rem; left: 1rem; }
 /* En haut, sous l'en-tête quand les contrôles sont affichés. */
-.mapfull:not(.nochrome) .gclock.pos-tl, .mapfull:not(.nochrome) .gclock.pos-tr { top: 5rem; }
+.mapfull:not(.nochrome) .gclock.pos-tl, .mapfull:not(.nochrome) .gclock.pos-tr { top: calc(5rem + var(--osr, 0px)); }
 /* Contrôles masqués : la pastille lecture/pause disparaît, l'horloge en bas à gauche descend dans le coin. */
 .nochrome .gclock.pos-bl { bottom: 1rem; }
 .mgclock { -webkit-align-items: center; align-items: center; }

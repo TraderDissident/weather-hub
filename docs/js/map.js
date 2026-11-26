@@ -502,7 +502,7 @@
   var lastLayout = 0;
   function placeOnGlobe(final) {
     if (!st.root || st.view !== 'globe') return;
-    var cx = st.w / 2, cy = st.h / 2, G = SM.globe;
+    var cx = st.w / 2, cy = st.h / 2 + (st.gy || 0), G = SM.globe;
     U.$$('.mk', st.box).forEach(function (mk, i) {
       var ci = st.infos && st.infos[i];
       if (!ci) return;
@@ -1044,8 +1044,12 @@
     var gfull = full && st.view === 'globe', appEl = document.getElementById('app');
     // Globe en paysage : la boîte prend aussi la largeur de la rangée de boutons ; le globe reste rond, centré.
     if (st.view === 'globe' && land && !full) { W = Math.floor(availW); H = Math.round(Math.max(280, landH)); }
-    if (gfull) { W = appEl.clientWidth; H = appEl.clientHeight - reserve; }
-    st.box.style.top = gfull && reserve ? reserve + 'px' : '';
+    if (gfull) { W = appEl.clientWidth; H = appEl.clientHeight; }
+    /* Globe : le fond (ciel étoilé) garde tout l'écran ; seul le globe descend sous la place laissée à l'heure de macOS,
+       et rapetisse pour tenir dans la hauteur qui reste (Matt, 26/11 : « décale le globe, mais pas l'espace en entier »). */
+    st.gy = gfull ? reserve / 2 : 0;
+    st.gsize = gfull ? Math.min(W, H - reserve) : 0;
+    st.box.style.setProperty('--osr', (gfull ? reserve : 0) + 'px');
     if (lay) {
       // Reste de hauteur (carte plate aux bornes de latitude) : partagé au-dessus et au-dessous, la marge reste égale.
       wrap.style.marginTop = (topY + Math.max(0, landH - H) / 2).toFixed(1) + 'px';
@@ -1072,7 +1076,9 @@
       }
       var motion = SM.app.settings.motion;
       applySpin();
-      SM.globe.resize(Math.min(W, H) * 1.0);
+      SM.globe.resize(st.gsize || Math.min(W, H) * 1.0);
+      var gcv = U.$('.gcv', st.box);
+      if (gcv) gcv.style.top = st.gy ? 'calc(50% + ' + st.gy + 'px)' : '';
       SM.globe.run();
     }
     buildLayers();

@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.39.1 · 26/11/2026 · Globe · Place pour l'heure de macOS, fond entier
+
+- Avec « Place pour l'heure de macOS », le globe en plein écran descend et rapetisse pour tenir sous la place réservée, mais le ciel étoilé garde tout l'écran. Les points, les étiquettes et l'horloge du globe suivent.
+
 ## 1.39.0 · 26/11/2026 · Carte et globe · Place pour l'heure de macOS
 
 - Options de la carte : « Place pour l'heure de macOS (plein écran) ». En plein écran seulement, le haut de l'écran (22 % de la hauteur) reste libre pour la grande heure que macOS affiche sur les économiseurs d'écran ; la carte ou le globe, et l'horloge du globe, se logent dessous. Hors plein écran, rien ne change.
