@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.35.4 · 26/11/2026 · En-tête · Plein écran avant les options
+
+- Sur la carte et le globe, le bouton plein écran passe avant celui des options de la carte.
+
 ## 1.35.3 · 26/11/2026 · En-tête · Vues à gauche, réglages et lieux à droite
 
 - Barre du haut réorganisée : à gauche, les trois vues (ville, mosaïque, carte) ; à droite, les réglages puis les lieux, précédés sur la carte et le globe des options de la carte et du plein écran. Même écart entre tous les boutons.
