@@ -48,6 +48,10 @@
     html += field(tt.dotSize, '<input type="range" class="vrange" data-dot="1" min="0.4" max="3" step="0.1" value="' + dk + '">' +
       '<div class="vends"><span>' + U.esc(tt.smaller) + '</span><span>' + U.esc(tt.bigger) + '</span></div>' +
       (SM.map && SM.map.dotsHTML ? SM.map.dotsHTML() : ''));
+    // Vitesse de rotation du globe (même réglage que les boutons 0,5× à 2× du globe).
+    var vs = SM.map && SM.map.spinSpeed ? SM.map.spinSpeed() : 1;
+    html += field(tt.spinSpeed, '<input type="range" class="vrange" data-spin="1" min="0.25" max="3" step="0.25" value="' + vs + '">' +
+      '<div class="vends"><span>' + U.esc(tt.slower) + '</span><span>' + U.esc(tt.faster) + '</span></div>');
     html +=
       field(tt.motion, seg('motion', [['auto', tt.auto], ['reduced', tt.reduced], ['off', tt.motionOff]], s.motion)) +
       field(tt.seconds, seg('seconds', [[true, tt.yes], [false, tt.no]], s.seconds)) +
@@ -115,6 +119,10 @@
       if (pop) pop.parentNode.removeChild(pop);
     };
     U.$$('.vrange', body).forEach(function (r) {
+      if (r.hasAttribute('data-spin')) {
+        r.oninput = r.onchange = function () { if (SM.map && SM.map.setSpinSpeed) SM.map.setSpinSpeed(parseFloat(r.value)); };
+        return;
+      }
       if (r.hasAttribute('data-dot')) {
         r.oninput = r.onchange = function () { if (SM.map && SM.map.setDotScale) SM.map.setDotScale(parseFloat(r.value)); };
         return;

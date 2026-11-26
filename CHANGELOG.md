@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.40.1 · 26/11/2026 · Réglages · Vitesse de rotation du globe
+
+- Réglages : curseur « Vitesse de rotation du globe », de 0,25× à 3×, sous la taille des points. C'est le même réglage que les boutons 0,5× à 2× de la pastille du globe, qui suivent.
+
 ## 1.40.0 · 26/11/2026 · Globe · Étiquettes qui s'écartent
 
 - Globe : les étiquettes qui se chevauchent s'écartent de quelques points en glissant, puis reviennent à leur place quand la gêne disparaît (chaque étiquette repart de sa place de référence à chaque image, l'écart ne s'accumule jamais). La ville la plus proche du centre garde sa place ; un trait relie l'étiquette écartée à son point. Au-delà de 60 points, l'étiquette s'estompe. Rien n'est enregistré ; la carte plate ne change pas.

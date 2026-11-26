@@ -1350,6 +1350,15 @@
   // Clignotement, halo et couleur des points : affichés dans les Réglages, à côté de la taille (demande de Matt, 26/11).
   M.dotsHTML = dotsHTML;
   M.dotScale = dotScale;
+  /* Vitesse de rotation du globe, réglable aussi dans les Réglages (curseur de 0,25× à 3×), comme la taille des
+     points. Même réglage que les boutons 0,5× à 2× de la pastille du globe (sm.globeSpeed). */
+  M.spinSpeed = function () { return spinSpeed(); };
+  M.setSpinSpeed = function (v) {
+    v = Math.round(U.clamp(v, 0.25, 3) * 100) / 100;
+    try { localStorage.setItem('sm.globeSpeed', String(v)); } catch (e) { /* rien */ }
+    if (SM.globe) applySpin();
+    U.$$('[data-gspeed]').forEach(function (x) { x.className = parseFloat(x.getAttribute('data-gspeed')) === v ? 'on' : ''; });
+  };
   M.setDotScale = function (k) {
     try { localStorage.setItem('sm.dotScale', String(U.clamp(k, DOT_MIN, DOT_MAX))); } catch (e) { /* rien */ }
     dotSize();
