@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.33.1 · 26/11/2026 · Ciel · Retour au ciel de la 1.32.7
+
+- Depuis la 1.32.8, un bouton rond de l'en-tête s'affichait sur l'iPad avec un carré de couleurs arc-en-ciel à l'intérieur (photos de Matt du 26/11). La 1.32.9 avait visé la lune, à tort. Le ciel reprend exactement le code de la 1.32.7 : étoiles, soleil, lune, gouttes, éclair et flash comme avant la 1.32.8. Le curseur de taille des points de la carte (1.33.0) reste.
+
 ## 1.33.0 · 26/11/2026 · Carte · Taille des points réglable
 
 - Réglages : nouveau curseur « Taille des points de la carte », de 0,4 à 3 fois la taille actuelle (de 5 à 36 points sur l'iPad au lieu de 12). L'anneau qui clignote et le halo de nuit suivent. Le réglage est propre à chaque appareil : il ne part pas dans la sauvegarde et n'est pas remplacé par un import. Sans réglage, rien ne change.

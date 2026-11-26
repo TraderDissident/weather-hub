@@ -42,12 +42,11 @@ svg.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .sky-l { top: 0; left: 0; width: 25.2%; height: 25.2%; opacity: 0; -webkit-transition: opacity 3s linear; transition: opacity 3s linear;
   -webkit-transform: scale3d(4, 4, 1); transform: scale3d(4, 4, 1); -webkit-transform-origin: 0 0; transform-origin: 0 0; }
 #starsBox { top: 0; left: 0; width: 100%; height: 80%; }
-/* La transparence des étoiles et leur clignotement sont réglés image par image (voir twinkle() dans sky.js). */
 #starsBox img { position: absolute; top: 0; left: 0; display: block; }
+#twinkle { -webkit-animation: twinkle 3.2s ease-in-out infinite alternate; animation: twinkle 3.2s ease-in-out infinite alternate; }
+@-webkit-keyframes twinkle { from { opacity: .15; } to { opacity: 1; } }
+@keyframes twinkle { from { opacity: .15; } to { opacity: 1; } }
 
-/* Soleil et lune : le halo est peint au quart de sa taille puis agrandi quatre fois par la carte graphique, dans sa
-   propre couche. 1.32.8 l'avait peint à sa taille dans la couche de l'astre (un élément de taille nulle) : sur
-   l'iPad (iOS 12), cette couche s'affichait en carré de couleurs arc-en-ciel (photo de Matt, 26/11). Ne pas refaire. */
 #sun, #moonEl { top: 0; left: 0; width: 0; height: 0; -webkit-transition: opacity 3s, -webkit-transform 3s; transition: opacity 3s, transform 3s; }
 #sun .disc, #sun .halo { position: absolute; border-radius: 50%; }
 #sun .disc { width: 7vmin; height: 7vmin; margin: -3.5vmin 0 0 -3.5vmin;
@@ -79,6 +78,7 @@ svg.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 @-webkit-keyframes fogB { from { -webkit-transform: translate3d(40%, 0, 0) scale(4); } to { -webkit-transform: translate3d(-40%, 0, 0) scale(4); } }
 @keyframes fogB { from { transform: translate3d(40%, 0, 0) scale(4); } to { transform: translate3d(-40%, 0, 0) scale(4); } }
 #sky.still .fog1, #sky.still .fog2 { -webkit-animation: none; animation: none; -webkit-transform: scale(4); transform: scale(4); }
+#sky.still #twinkle { -webkit-animation: none; animation: none; }
 
 #hills { left: 0; right: 0; bottom: 0; height: 24%; }
 .port #hills { height: 17%; }
