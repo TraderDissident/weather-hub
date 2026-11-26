@@ -968,6 +968,10 @@
     if (full) W = st.view === 'globe' ? availW : Math.min(availW, fullH / ASPECT);
     W = Math.floor(Math.max(W, 280));
     var H = full && st.view === 'globe' ? fullH : Math.round(W * ASPECT);
+    // Globe en plein écran : la boîte couvre tout l'écran, en-tête compris ; les boutons restent par-dessus (classe gfull).
+    var gfull = full && st.view === 'globe', appEl = document.getElementById('app');
+    if (gfull) { W = appEl.clientWidth; H = appEl.clientHeight; }
+    else if (appEl.className.indexOf(' nochrome') >= 0) appEl.className = appEl.className.replace(' nochrome', '');
     // En portrait, le globe prend la hauteur libre au lieu de celle de la carte plate.
     if (st.view === 'globe' && !land && !full) H = Math.round(Math.max(H, Math.min(W * 0.85, st.root.clientHeight - bottom.offsetHeight - 60)));
     if (!force && W === st.w && H === st.h) return;
@@ -978,7 +982,7 @@
     dotSize();
     st.cv.width = Math.round(W * st.pr); st.cv.height = Math.round(H * st.pr);
     st.cv.style.width = W + 'px'; st.cv.style.height = H + 'px';
-    st.box.className = 'mapbox' + (st.view === 'globe' ? ' globe' : '');
+    st.box.className = 'mapbox' + (st.view === 'globe' ? ' globe' : '') + (gfull ? ' gfull' : '');
     if (st.view === 'globe') {
       if (!SM.globe.active()) {
         if (SM.globe.attach(st.box, placeOnGlobe)) {
@@ -1137,6 +1141,21 @@
     try { localStorage.setItem('sm.dotScale', String(U.clamp(k, DOT_MIN, DOT_MAX))); } catch (e) { /* rien */ }
     dotSize();
   };
+
+  /* Globe en plein écran : un appui sur un endroit vide (ni lieu, ni étiquette, ni bouton) masque tous les contrôles,
+     l'appui suivant les remontre. Un glissement (rotation du globe) ne compte pas. */
+  var tapXY = null;
+  function tapStart(e) { var t = e.touches ? e.touches[0] : e; tapXY = t ? [t.clientX, t.clientY] : null; }
+  document.addEventListener('touchstart', tapStart, true);
+  document.addEventListener('mousedown', tapStart, true);
+  document.addEventListener('click', function (e) {
+    var app = document.getElementById('app'), t = e.target;
+    if (!app || !t.closest || !t.closest('.mapbox.gfull') || t.closest('.mk, .gctl, button, a')) return;
+    if (tapXY && Math.abs(e.clientX - tapXY[0]) + Math.abs(e.clientY - tapXY[1]) > 10) return;
+    if (M.labelDragging()) return;
+    var off = app.className.indexOf(' nochrome') >= 0;
+    app.className = off ? app.className.replace(' nochrome', '') : app.className + ' nochrome';
+  });
 
   M.labelDragging = function () { return !!(drag && drag.moved) || Date.now() - draggedAt < 400; };
   SM.map = M;

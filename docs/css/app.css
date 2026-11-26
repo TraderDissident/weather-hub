@@ -701,6 +701,13 @@ header.top { position: relative; }
 .mapfull .mapwrap { padding: 0; margin: auto 0; }
 /* Centrée sur l'écran entier, pas seulement sous l'en-tête (qui n'a plus de titre et paraît vide) : remonte de la moitié de sa hauteur. */
 .mapfull .mapwrap { position: relative; top: -2.4rem; }
+/* Globe en plein écran : la boîte du globe couvre tout l'écran (taille posée par M.resize), l'en-tête et ses boutons
+   restent par-dessus, à leur place. */
+.mapbox.gfull { position: fixed; top: 0; left: 0; z-index: 0; border-radius: 0; box-shadow: none; }
+.mapfull header.top { z-index: 6; }
+/* Contrôles masqués par un appui sur un endroit vide du globe (voir map.js) ; l'appui suivant les remontre. */
+.nochrome header.top, .nochrome .gctl, .nochrome .mapcredit { visibility: hidden; }
+.mapfull .mapview { -webkit-overflow-scrolling: auto; }
 
 /* Lieux : poignée de glisser-déposer */
 .prow .grip { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center;

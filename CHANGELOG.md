@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.34.0 · 26/11/2026 · Globe · Vrai plein écran
+
+- Globe en plein écran : il occupe maintenant tout l'écran, en-tête compris. Les boutons restent à leur place, par-dessus.
+- Dans ce plein écran, un appui sur un endroit vide (ni lieu, ni étiquette, ni bouton) masque tous les contrôles ; l'appui suivant les remontre. Faire tourner le globe ne les masque pas.
+
 ## 1.33.4 · 26/11/2026 · Réglages · Clignotement, halo et couleur des points
 
 - Les trois réglages des points de la carte (clignotement, halo, couleur) quittent les options de la carte et rejoignent les Réglages, sous le curseur de taille des points.
