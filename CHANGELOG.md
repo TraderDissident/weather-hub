@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.32.9 · 26/11/2026 · Ciel · Halo de la lune et du soleil rétabli
+
+- La 1.32.8 peignait le halo de la lune et du soleil dans la couche de l'astre : sur l'iPad (iOS 12), il s'affichait en carré de couleurs arc-en-ciel. Le halo reprend sa forme de la 1.32.7 (peint au quart de sa taille, agrandi par la carte graphique dans sa propre couche). Les autres allègements de la 1.32.8 (étoiles, gouttes, éclair, flash) restent.
+
 ## 1.32.8 · 26/11/2026 · Ciel · Moins de travail pour la carte graphique, par tous les temps
 
 - Prévention, à image égale : relevé de tout le ciel (18 scènes, de jour et de nuit) pour retirer ce que la carte graphique et la page faisaient sans que cela se voie. Aucun de ces points n'est une cause prouvée de gel, et la charge de la carte graphique de l'iPad ne se mesure pas à distance.

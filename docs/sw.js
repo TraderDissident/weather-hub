@@ -1,11 +1,11 @@
 /* Garde la coquille de l'app pour démarrer sans réseau. Les données météo ne passent jamais par ici. */
-var VERSION = 'sm-1.32.8';
+var VERSION = 'sm-1.32.9';
 var SHELL = [
-  './', 'index.html', 'css/app.css?v=1.32.8',
-  'js/config.js?v=1.32.8', 'js/diag.js?v=1.32.8', 'js/compat.js?v=1.32.8', 'js/store.js?v=1.32.8', 'js/i18n.js?v=1.32.8',
-  'js/api.js?v=1.32.8', 'js/astro.js?v=1.32.8', 'js/codes.js?v=1.32.8', 'js/comfort.js?v=1.32.8', 'js/icons.js?v=1.32.8', 'js/sky.js?v=1.32.8',
-  'js/ui.js?v=1.32.8', 'js/places.js?v=1.32.8', 'js/settings.js?v=1.32.8', 'js/calib.js?v=1.32.8', 'js/world.js?v=1.32.8', 'js/borders.js?v=1.32.8', 'js/globe.js?v=1.32.8', 'js/map.js?v=1.32.8', 'js/edit.js?v=1.32.8', 'js/list.js?v=1.32.8', 'js/update.js?v=1.32.8', 'js/app.js?v=1.32.8',
-  'socle/installation.css?v=1.32.8', 'socle/installation.js?v=1.32.8',
+  './', 'index.html', 'css/app.css?v=1.32.9',
+  'js/config.js?v=1.32.9', 'js/diag.js?v=1.32.9', 'js/compat.js?v=1.32.9', 'js/store.js?v=1.32.9', 'js/i18n.js?v=1.32.9',
+  'js/api.js?v=1.32.9', 'js/astro.js?v=1.32.9', 'js/codes.js?v=1.32.9', 'js/comfort.js?v=1.32.9', 'js/icons.js?v=1.32.9', 'js/sky.js?v=1.32.9',
+  'js/ui.js?v=1.32.9', 'js/places.js?v=1.32.9', 'js/settings.js?v=1.32.9', 'js/calib.js?v=1.32.9', 'js/world.js?v=1.32.9', 'js/borders.js?v=1.32.9', 'js/globe.js?v=1.32.9', 'js/map.js?v=1.32.9', 'js/edit.js?v=1.32.9', 'js/list.js?v=1.32.9', 'js/update.js?v=1.32.9', 'js/app.js?v=1.32.9',
+  'socle/installation.css?v=1.32.9', 'socle/installation.js?v=1.32.9',
   'img/icon-180.png', 'img/earth-day.jpg', 'img/earth-night.jpg'
 ];
 
