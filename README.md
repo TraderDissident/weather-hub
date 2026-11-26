@@ -2,7 +2,7 @@
 
 Application web de météo pour un vieil iPad sous iOS 12, installée sur l'écran d'accueil et laissée allumée comme station météo. Ciel animé selon l'heure réelle du lieu et le temps qu'il y fait, aucune publicité, aucun compte.
 
-Adresse : https://traderdissident.github.io/station-meteo/
+Adresse : https://traderdissident.github.io/weather-hub/
 
 ## Installer sur l'iPad
 

@@ -35,7 +35,7 @@ S'inspirer ne veut pas dire recopier : icônes, fonds et mise en page sont les n
 
 Prises par défaut, modifiables avant le démarrage :
 
-1. **Hébergement** : GitHub Pages, dépôt public `station-meteo`, dossier publié `docs/`. Le dépôt ne contient rien de personnel : les lieux choisis restent dans l'iPad. (Un compte gratuit ne publie pas de Pages depuis un dépôt privé.)
+1. **Hébergement** : GitHub Pages, dépôt public `weather-hub` (ex-`station-meteo`, renommé le 26/11/2026), dossier publié `docs/`. Le dépôt ne contient rien de personnel : les lieux choisis restent dans l'iPad. (Un compte gratuit ne publie pas de Pages depuis un dépôt privé.)
 2. **Nom sous l'icône** : « Météo ».
 3. **Langue** : français et anglais, selon la langue de l'iPad, anglais par défaut. Réglage pour forcer.
 4. **Radar de pluie** : hors version 1 (voir section 12).
@@ -196,7 +196,7 @@ Le temps module le dégradé : couverture nuageuse vers le gris, pluie plus somb
 ## 10. Organisation du code
 
 ```
-StationMeteo/
+WeatherHub/
   PLAN.md  README.md  CHANGELOG.md
   docs/                      ← dossier publié
     index.html  sw.js  manifest.webmanifest

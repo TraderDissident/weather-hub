@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.36.2 · 26/11/2026 · Carte · Plein écran sur toute la hauteur
+
+- Carte plate en plein écran : elle prend toute la hauteur libre, avec plus de nord puis plus de sud (jusqu'à 85° N et 80° S) ; contrôles masqués, l'en-tête libère aussi sa place.
+- Le menu des options de la carte passe au-dessus du liseré de la carte, qui le traversait.
+
 ## 1.36.1 · 26/11/2026 · App · Nouveau nom : Weather Hub
 
 - L'app s'appelle Weather Hub partout : titre de la page, nom sous l'icône de l'écran d'accueil (manifeste et réglage iOS), bannière « Installer Weather Hub » dans Safari, en-tête du journal, fichier de sauvegarde (les sauvegardes d'avant restent lisibles), page de test. Une icône déjà posée sur l'écran d'accueil garde l'ancien nom jusqu'à ce qu'on la réinstalle.

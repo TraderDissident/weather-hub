@@ -26,7 +26,8 @@
     var span = ratio * 2 * PI, n = miller(75), sm = miller(-58), base = n - sm, extra = span - base;
     var inv = function (m) { return (2.5 * Math.atan(Math.exp(0.8 * m)) - 0.625 * PI) / RAD; };
     if (extra >= 0) {
-      var n2 = Math.min(n + extra, miller(NORTH_MAX)), s2 = Math.max(sm - (extra - (n2 - n)), miller(-72));
+      // Jusqu'à 85° N et 80° S : au-delà, la projection étire trop les pôles.
+      var n2 = Math.min(n + extra, miller(85)), s2 = Math.max(sm - (extra - (n2 - n)), miller(-80));
       return [inv(n2), inv(s2)];
     }
     var s3 = Math.min(sm - extra, miller(SOUTH_MIN)), left = span - (n - s3), n3 = Math.max(n + Math.min(0, left), miller(73));
@@ -989,7 +990,10 @@
     // Plein écran : la carte entière, aussi grande que l'écran le permet, sans débord ; le reste reste vide.
     var full = document.getElementById('app').className.indexOf('mapfull') >= 0;
     var fullH = full ? st.root.clientHeight - U.$('.zones', st.root).offsetHeight - 2 : 0;
-    var north = full && st.view === 'map' ? northFor(fullH / Math.max(availW, 1)) : 75, south = -58;
+    var north = 75, south = -58;
+    /* Plein écran, carte plate : toute la hauteur libre, plus de nord (jusqu'à 84°) puis plus de sud (jusqu'à 72° S),
+       comme en paysage (fitLat). Avant, seul le nord grandissait et il restait du vide en haut et en bas (Matt, 26/11). */
+    if (full && st.view === 'map') { var ff = fitLat(fullH / Math.max(availW, 1)); north = ff[0]; south = ff[1]; }
     var landH = st.root.clientHeight - bottom.offsetHeight - U.$('.zones', st.root).offsetHeight - 8;
     /* Paysage hors plein écran : une seule marge M (celle des côtés) partout. Au-dessus des heures : M sous les
        boutons, ou M sous la barre d'état quand les contrôles sont masqués (l'en-tête sort alors de la mise en page).

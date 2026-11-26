@@ -709,19 +709,23 @@ header.top { position: relative; }
 .mapfull .mapwrap { padding: 0; margin: auto 0; }
 /* Centrée sur l'écran entier, pas seulement sous l'en-tête (qui n'a plus de titre et paraît vide) : remonte de la moitié de sa hauteur. */
 .mapfull .mapwrap { position: relative; top: -2.4rem; }
+/* Plein écran, contrôles masqués : l'en-tête sort de la mise en page, plus de décalage à compenser. */
+.mapfull.nochrome .mapwrap { top: 0; }
 /* Globe en plein écran : la boîte du globe couvre tout l'écran (taille posée par M.resize), l'en-tête et ses boutons
    restent par-dessus, à leur place. */
 .mapbox.gfull { position: fixed; top: 0; left: 0; z-index: 0; border-radius: 0; box-shadow: none; }
-.mapfull header.top { z-index: 6; }
+.mapfull header.top { z-index: 40; }
 /* Contrôles masqués par un appui sur un endroit vide de la carte ou du globe (voir map.js) ; l'appui suivant les remontre. */
 /* Ville et mosaïque : seuls les boutons disparaissent, le nom du lieu ou le titre restent. Carte : tout l'en-tête. */
 .nochrome .hside, .nochrome.mapmode header.top, .nochrome .gctl, .nochrome .mapcredit, .nochrome #hbar { visibility: hidden; }
 /* Paysage : l'en-tête masqué sort de la mise en page, la carte reprend sa hauteur (voir M.resize). */
-.land.mapmode.nochrome:not(.mapfull) header.top { position: absolute; left: 0; right: 0; top: 20px; top: max(20px, env(safe-area-inset-top)); }
+.land.mapmode.nochrome header.top, .mapfull.nochrome header.top { position: absolute; left: 0; right: 0; top: 20px; top: max(20px, env(safe-area-inset-top)); }
 /* Sans barre d'état iOS par-dessus la page (navigateur, ordinateur), la bande de 20 points réservée en haut disparaît
    aussi : la marge du haut part du bord de la fenêtre, comme celles des côtés. Sur l'iPad (écran d'accueil), elle part
    de sous la barre d'état. */
-.land.mapmode.nochrome.nobar:not(.mapfull) #ui { padding-top: 0; }
+.land.mapmode.nochrome.nobar #ui, .mapfull.nochrome.nobar #ui { padding-top: 0; }
+/* L'en-tête et son menu d'options passent au-dessus de la carte et de son liseré (z-index 6 dans .mapbox::after). */
+.mapmode header.top { z-index: 40; }
 /* Paysage hors plein écran : marges posées par M.resize (une seule valeur partout) ; plus de centrage automatique. */
 .land.mapmode:not(.mapfull) .mapview { overflow: hidden; }
 .land.mapmode:not(.mapfull) .mapwrap { margin-top: 0; }
