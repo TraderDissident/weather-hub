@@ -52,6 +52,12 @@
     var vs = SM.map && SM.map.spinSpeed ? SM.map.spinSpeed() : 1;
     html += field(tt.spinSpeed, '<input type="range" class="vrange" data-spin="1" min="0.25" max="3" step="0.25" value="' + vs + '">' +
       '<div class="vends"><span>' + U.esc(tt.slower) + '</span><span>' + U.esc(tt.faster) + '</span></div>');
+    // Réglages activables : tour du monde (globe) et villes qui pulsent.
+    var tour = SM.map && SM.map.tourOn ? SM.map.tourOn() : false, pulse = SM.map && SM.map.pulseOn ? SM.map.pulseOn() : false;
+    html += field(tt.tour, '<div class="seg"><button data-tour="1"' + (tour ? ' class="on"' : '') + '>' + U.esc(tt.yes) + '</button><button data-tour="0"' + (!tour ? ' class="on"' : '') + '>' + U.esc(tt.no) + '</button></div>' +
+      '<p class="about">' + U.esc(tt.tourHint) + '</p>');
+    html += field(tt.pulse, '<div class="seg"><button data-pulse="1"' + (pulse ? ' class="on"' : '') + '>' + U.esc(tt.yes) + '</button><button data-pulse="0"' + (!pulse ? ' class="on"' : '') + '>' + U.esc(tt.no) + '</button></div>' +
+      '<p class="about">' + U.esc(tt.pulseHint) + '</p>');
     html +=
       field(tt.motion, seg('motion', [['auto', tt.auto], ['reduced', tt.reduced], ['off', tt.motionOff]], s.motion)) +
       field(tt.seconds, seg('seconds', [[true, tt.yes], [false, tt.no]], s.seconds)) +
@@ -79,6 +85,13 @@
     body.innerHTML = settingsHTML();
     showLatest();
     body.onclick = function (e) {
+      var tp = e.target.closest('[data-tour], [data-pulse]');
+      if (tp && SM.map) {
+        if (tp.hasAttribute('data-tour')) SM.map.setTour(tp.getAttribute('data-tour') === '1');
+        else SM.map.setPulse(tp.getAttribute('data-pulse') === '1');
+        bindSettings(body);
+        return;
+      }
       var b = e.target.closest('.seg button');
       if (b && b.parentNode.hasAttribute('data-key')) {
         var key = b.parentNode.getAttribute('data-key');

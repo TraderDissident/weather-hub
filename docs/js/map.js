@@ -447,10 +447,17 @@
     return { p: p, pl: I.place(p), w: w, c: c, d: d, wl: wl, tz: tz, sky: sky, night: sky.alt < -3, temp: c ? c.temp : null };
   }
 
+  /* Ville « qui bouge » (réglage « Villes qui pulsent ») : pluie, neige, grêle ou orage maintenant, ou température
+     extrême (0 °C et moins, 35 °C et plus). Son point pulse doucement. */
+  function cityActive(ci) {
+    var c = ci.c;
+    if (!c) return false;
+    return CO.isWet(c.code) || (c.precip || 0) > 0 || (U.has(c.temp) && (c.temp <= 0 || c.temp >= 35));
+  }
   function markerHTML(ci, i) {
     var icon = ci.c ? IC.weather(CO.icon(ci.c.code, ci.sky.alt > -1), 'mki') : '';
     var col = dotColor() === 'temp' ? (U.has(ci.temp) ? SM.ui.tempColor(ci.temp) : '#ffffff') : dotColor();
-    return '<div class="mk' + (ci.night ? ' night' : '') + '" data-place="' + U.esc(ci.p.id) + '" style="left:' + (fx(ci.p.lon) * 100).toFixed(3) + '%;top:' + (fy(ci.p.lat) * 100).toFixed(3) + '%">' +
+    return '<div class="mk' + (ci.night ? ' night' : '') + (cityActive(ci) ? ' act' : '') + '" data-place="' + U.esc(ci.p.id) + '" style="left:' + (fx(ci.p.lon) * 100).toFixed(3) + '%;top:' + (fy(ci.p.lat) * 100).toFixed(3) + '%">' +
       '<i class="mkd" style="background:' + col + '"></i><i class="mkp" style="border-color:' + col + '"></i>' +
       '<div class="mkl">' + icon + '<div class="mkt"><b>' + (U.has(ci.temp) ? I.temp(ci.temp) : '') + '</b><span>' + U.esc(ci.pl.name) + '</span><small class="mktime"></small></div></div></div>';
   }
@@ -520,7 +527,7 @@
       var gd = mk._gd;
       if (!gd) {
         gd = mk._gd = document.createElement('div');
-        gd.className = 'mkg' + (ci.night ? ' night' : '');
+        gd.className = 'mkg' + (ci.night ? ' night' : '') + (cityActive(ci) ? ' act' : '');
         gd.setAttribute('data-place', ci.p.id);
         var d0 = U.$('.mkd', mk), p0 = U.$('.mkp', mk);
         gd.innerHTML = (d0 ? d0.outerHTML : '') + (p0 ? p0.outerHTML : '');
@@ -933,6 +940,7 @@
     st.root = U.$('.mapview', container);
     if (!dotBlink()) st.root.className += ' noblink';
     if (!dotHalo()) st.root.className += ' nohalo';
+    if (pulseOn()) st.root.className += ' pulse';
     // Glisser d'étiquette : seul écouteur non passif de la carte, posé sur elle (voir config.js).
     st.root.addEventListener('touchmove', dragMove, { passive: false });
     st.box = U.$('.mapbox', st.root);
@@ -1140,6 +1148,7 @@
       }
       var motion = SM.app.settings.motion;
       applySpin();
+      if (tourOn()) tourStart();
       SM.globe.resize(st.gsize || Math.min(W, H) * 1.0);
       var gcv = U.$('.gcv', st.box);
       if (gcv) gcv.style.top = st.gy ? 'calc(50% + ' + st.gy + 'px)' : '';
@@ -1221,7 +1230,61 @@
   /* ---------- horloge sur le globe en plein écran ---------- */
   /* Une carte horloge (la même que sous la carte) posée dans un coin du globe en plein écran : lieu et coin choisis
      dans les options de la carte (demande de Matt, 26/11). Rien par défaut. Elle reste quand les contrôles sont masqués. */
-  function gclockPlace() { var v = spinPref('sm.globeClock', ''); return v && st.places && st.places.some(function (p) { return p.id === v; }) ? v : ''; }
+  /* Réglages activables (Réglages, sous la vitesse du globe) : villes qui pulsent, tour du monde. */
+  function pulseOn() { return spinPref('sm.dotPulse', '') === '1'; }
+  function tourOn() { return spinPref('sm.globeTour', '') === '1'; }
+  M.pulseOn = pulseOn; M.tourOn = tourOn;
+  M.setPulse = function (on) {
+    try { localStorage.setItem('sm.dotPulse', on ? '1' : ''); } catch (e) { /* rien */ }
+    if (st.root) st.root.className = st.root.className.replace(' pulse', '') + (on ? ' pulse' : '');
+  };
+  M.setTour = function (on) {
+    try { localStorage.setItem('sm.globeTour', on ? '1' : ''); } catch (e) { /* rien */ }
+    tourStop(); if (on) tourStart();
+  };
+
+  /* Tour du monde : le globe va d'une ville à l'autre, dans l'ordre de la vue Carte et globe, en 2,5 s, et s'arrête
+     8 s sur chacune ; l'horloge du globe plein écran montre la ville du moment. La rotation continue est suspendue
+     pendant le tour ; un geste sur le globe le suspend, puis il reprend 8 s après. Jamais avec « Animations : désactivées ». */
+  var tour = { t: 0, i: -1, id: '', from: null, to: null, start: 0 };
+  var TOUR_GO = 2500, TOUR_STAY = 8000;
+  function tourActive() { return tourOn() && st.root && st.view === 'globe' && SM.globe && SM.globe.active() && SM.app.settings.motion !== 'off'; }
+  function tourStop() { clearInterval(tour.t); tour.t = 0; tour.id = ''; if (SM.globe && st.root) { applySpin(); gclockFill(); } }
+  function tourStart() {
+    if (tour.t || !tourActive()) return;
+    tour.i = -1; tour.to = null;
+    tour.t = setInterval(tourStep, 40);
+    tourNext();
+  }
+  function tourNext() {
+    var list = SM.app.ordered('map');
+    if (!list.length) return;
+    tour.i = (tour.i + 1) % list.length;
+    var p = list[tour.i];
+    tour.id = p.id;
+    tour.from = [SM.globe.lon, SM.globe.lat];
+    var dl = ((p.lon - SM.globe.lon + 540) % 360) - 180;   // le plus court chemin
+    tour.to = [SM.globe.lon + dl, U.clamp(p.lat, -45, 50)];
+    tour.start = Date.now();
+    gclockFill();
+  }
+  function tourStep() {
+    if (!tourActive()) { tourStop(); return; }
+    if (document.hidden) return;
+    SM.globe.spin = 0;
+    if (SM.globe.dragging || Date.now() < SM.globe.pausedUntil) { tour.start = Date.now() - TOUR_GO; tour.to = null; return; }
+    if (!tour.to) { tour.start = Date.now() - TOUR_GO; tour.to = [SM.globe.lon, SM.globe.lat]; tour.from = tour.to; }
+    var t = (Date.now() - tour.start) / TOUR_GO;
+    if (t < 1) {
+      var e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      SM.globe.lon = ((tour.from[0] + (tour.to[0] - tour.from[0]) * e + 540) % 360) - 180;
+      SM.globe.lat = tour.from[1] + (tour.to[1] - tour.from[1]) * e;
+      SM.globe.draw();
+    } else if (Date.now() - tour.start > TOUR_GO + TOUR_STAY) tourNext();
+  }
+  M.tourCity = function () { return tour.t ? tour.id : ''; };
+
+  function gclockPlace() { var tc = tour.t && tour.id; if (tc) return tc; var v = spinPref('sm.globeClock', ''); return v && st.places && st.places.some(function (p) { return p.id === v; }) ? v : ''; }
   function gclockPos() { var v = spinPref('sm.globeClockPos', 'br'); return /^(tl|tr|bl|br)$/.test(v) ? v : 'br'; }
   function osclockOn() { return spinPref('sm.osClock', '') === '1'; }
   function osclockHTML() {

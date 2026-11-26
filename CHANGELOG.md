@@ -1,5 +1,11 @@
 # Journal des modifications
 
+## 1.41.0 · 26/11/2026 · Globe et carte · Tour du monde, villes qui pulsent, protection de l'écran
+
+- Réglage « Tour du monde (globe) » (non par défaut) : le globe va d'une ville à l'autre dans l'ordre de la vue Carte et globe, en 2,5 s, et s'arrête 8 s sur chacune ; en plein écran, l'horloge du globe montre la ville du moment. Un geste sur le globe le suspend.
+- Réglage « Villes qui pulsent » (non par défaut) : le point d'une ville pulse quand il y pleut, neige ou fait de l'orage, ou par température extrême (0 °C et moins, 35 °C et plus).
+- Protection de l'écran, toujours active : tout l'affichage glisse de quelques points, une position par heure sur un cycle de 8, invisible à l'œil, pour l'iPad allumé jour et nuit et l'économiseur.
+
 ## 1.40.4 · 26/11/2026 · Carte · Mise à l'échelle sous l'heure de macOS
 
 - Carte plate en plein écran avec « Place pour l'heure de macOS » : comme le globe, elle est réduite d'un bloc pour tenir sous la place réservée, en gardant ses latitudes ; points, étiquettes et règle des heures suivent la même proportion. Avant, elle descendait en perdant du sud. Le glisser des étiquettes tient compte de la réduction.

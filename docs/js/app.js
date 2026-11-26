@@ -1176,6 +1176,17 @@
     }
     setTimeout(SM.update.check, 5000);
 
+    /* Protection de l'écran : l'iPad (allumé jour et nuit) et l'économiseur affichent longtemps les mêmes formes. Tout
+       l'affichage glisse de quelques points, invisible à l'œil, sur un cycle de 8 positions (une par heure) ; un seul
+       décalage de position par heure, sans couche ni animation en plus pour la carte graphique. */
+    var DERIVE = [[0, 0], [2, 1], [-1, 2], [-2, 0], [1, -2], [-2, -2], [2, -1], [0, 2]];
+    var deriver = function () {
+      var p = DERIVE[Math.floor(Date.now() / 3600000) % DERIVE.length];
+      el.app.style.left = p[0] + 'px'; el.app.style.right = (-p[0]) + 'px'; el.app.style.top = p[1] + 'px';
+    };
+    deriver();
+    setInterval(deriver, 300000);
+
     // « Installer Weather Hub » : la bannière commune du socle (docs/socle, la même que dans les autres
     // apps de Matt), dans Safari seulement ; jamais dans l'app ouverte depuis l'écran d'accueil.
     if (window.SocleInstallation) {

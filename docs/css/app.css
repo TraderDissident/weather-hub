@@ -520,6 +520,11 @@ html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050
    fois le réglage de l'appareil (--dotk, voir dotSize() dans map.js). */
 .mkd { position: absolute; width: var(--dot, 12px); height: var(--dot, 12px); margin: calc(var(--dot, 12px) / -2) 0 0 calc(var(--dot, 12px) / -2); border-radius: 50%; box-shadow: 0 0 .5rem rgba(0, 0, 0, .5); }
 .noblink .mkp { display: none; }
+/* Villes qui pulsent (réglage) : le point grossit et revient, doucement. */
+.pulse .mk.act .mkd, .pulse .mkg.act .mkd { -webkit-animation: pulseDot 1.4s ease-in-out infinite alternate; animation: pulseDot 1.4s ease-in-out infinite alternate; }
+@-webkit-keyframes pulseDot { from { -webkit-transform: scale(1); } to { -webkit-transform: scale(1.55); } }
+@keyframes pulseDot { from { transform: scale(1); } to { transform: scale(1.55); } }
+#sky.still ~ #ui .pulse .mkd { -webkit-animation: none; animation: none; }
 .nohalo .mk.night::before { display: none; }
 .mkp { position: absolute; width: calc(1.8rem * var(--dotk, 1)); height: calc(1.8rem * var(--dotk, 1));
   margin: calc(-.9rem * var(--dotk, 1)) 0 0 calc(-.9rem * var(--dotk, 1)); border-radius: 50%; border: 2px solid #fff; opacity: 0;
