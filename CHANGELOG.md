@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.35.2 · 26/11/2026 · En-tête · Outils de la carte détachés des vues
+
+- Sur la carte, même espace entre les deux outils de la carte (options, plein écran) et les trois boutons de vue qu'entre ces boutons et les réglages.
+
 ## 1.35.1 · 26/11/2026 · En-tête · Réglages détachés des vues
 
 - Un peu plus d'espace entre les trois boutons de vue (ville, mosaïque, carte) et le bouton des réglages : environ le double de l'écart entre les autres boutons.
