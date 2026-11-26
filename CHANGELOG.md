@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.33.2 · 26/11/2026 · Carte · Pastille « couleur selon la température » sans carré
+
+- Options de la carte : la pastille multicolore (couleur des points selon la température) montrait un carré dans un cercle. Son dégradé s'arrêtait avant la bordure et se répétait dessous ; il couvre maintenant toute la pastille.
+
 ## 1.33.1 · 26/11/2026 · Ciel · Retour au ciel de la 1.32.7
 
 - Depuis la 1.32.8, un bouton rond de l'en-tête s'affichait sur l'iPad avec un carré de couleurs arc-en-ciel à l'intérieur (photos de Matt du 26/11). La 1.32.9 avait visé la lune, à tort. Le ciel reprend exactement le code de la 1.32.7 : étoiles, soleil, lune, gouttes, éclair et flash comme avant la 1.32.8. Le curseur de taille des points de la carte (1.33.0) reste.

@@ -1094,7 +1094,8 @@
     return '<div class="seg mdots"><button data-dblink="' + (on ? '0' : '1') + '"' + (on ? ' class="on"' : '') + '>' + tt.dotBlink + '</button>' +
       '<button data-dhalo="' + (halo ? '0' : '1') + '"' + (halo ? ' class="on"' : '') + '>' + tt.dotHalo + '</button>' +
       '<span class="dsw">' + DOT_COLORS.map(function (c) {
-        var bg = c === 'temp' ? 'linear-gradient(135deg,#4dd2ff,#5cf28c 35%,#ffd23f 65%,#ff4d6d)' : c;
+        // « border-box » : le dégradé couvre aussi la bordure. Sinon il se répète sous elle, et la pastille montre un carré dans un cercle.
+        var bg = c === 'temp' ? 'linear-gradient(135deg,#4dd2ff,#5cf28c 35%,#ffd23f 65%,#ff4d6d) border-box' : c;
         return '<button data-dcolor="' + c + '"' + (c === cur ? ' class="on"' : '') + ' aria-label="' + U.esc(c === 'temp' ? tt.dotTemp : c) + '" style="background:' + bg + '"></button>';
       }).join('') + '</span></div>';
   }
