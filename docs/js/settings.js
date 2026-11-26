@@ -46,7 +46,8 @@
     // Taille des points des lieux sur la carte et le globe : propre à cet appareil (voir dotSize() dans map.js).
     var dk = SM.map && SM.map.dotScale ? SM.map.dotScale() : 1;
     html += field(tt.dotSize, '<input type="range" class="vrange" data-dot="1" min="0.4" max="3" step="0.1" value="' + dk + '">' +
-      '<div class="vends"><span>' + U.esc(tt.smaller) + '</span><span>' + U.esc(tt.bigger) + '</span></div>');
+      '<div class="vends"><span>' + U.esc(tt.smaller) + '</span><span>' + U.esc(tt.bigger) + '</span></div>' +
+      (SM.map && SM.map.dotsHTML ? SM.map.dotsHTML() : ''));
     html +=
       field(tt.motion, seg('motion', [['auto', tt.auto], ['reduced', tt.reduced], ['off', tt.motionOff]], s.motion)) +
       field(tt.seconds, seg('seconds', [[true, tt.yes], [false, tt.no]], s.seconds)) +
@@ -75,7 +76,7 @@
     showLatest();
     body.onclick = function (e) {
       var b = e.target.closest('.seg button');
-      if (b) {
+      if (b && b.parentNode.hasAttribute('data-key')) {
         var key = b.parentNode.getAttribute('data-key');
         SM.app.setSetting(key, parse(key, b.getAttribute('data-v')));
         bindSettings(body);

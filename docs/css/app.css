@@ -552,6 +552,8 @@ html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050
 .mch { display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; -webkit-align-items: flex-start; align-items: flex-start; }
 .mch b { display: block; font-size: 1.05rem; font-weight: 600; line-height: 1.3; }
 .mdots { -webkit-align-items: center; align-items: center; }
+/* Dans les Réglages, sous le curseur de taille des points. */
+.field .mdots { margin-top: .8rem; }
 .dsw { display: -webkit-inline-flex; display: inline-flex; -webkit-align-items: center; align-items: center; }
 /* #hbar .seg button (padding, plus prioritaire par l'identifiant) les étirait en ovales : même priorité ici, taille figée. */
 .seg .dsw button, #hbar .seg .dsw button { -webkit-flex: none; flex: none; box-sizing: border-box; width: 1.55rem; height: 1.55rem; min-width: 0; padding: 0; margin: 0 .3rem 0 0; border-radius: 50%; border: 2px solid transparent; }

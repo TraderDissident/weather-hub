@@ -826,7 +826,7 @@
         return '<button data-style="' + k + '"' + (k === st.style ? ' class="on"' : '') + '>' + tt.mapStyles[k] + '</button>';
       }).join('') + '</div>' + (SM.globe.supported() ? '<div class="seg mview"><button data-view="map"' + (st.view === 'map' ? ' class="on"' : '') + '>' + tt.viewMap + '</button>' +
         '<button data-view="globe"' + (st.view === 'globe' ? ' class="on"' : '') + '>' + tt.viewGlobe + '</button></div>' : '') + '<div class="seg mswitch"><button data-cards="clocks"' + (st.cards === 'clocks' ? ' class="on"' : '') + '>' + tt.clocks + '</button>' +
-        '<button data-cards="weather"' + (st.cards === 'weather' ? ' class="on"' : '') + '>' + tt.weatherCards + '</button></div>' + dotsHTML() + '</div>' +
+        '<button data-cards="weather"' + (st.cards === 'weather' ? ' class="on"' : '') + '>' + tt.weatherCards + '</button></div></div>' +
         '<div class="mcards"></div></div></div>';
     st.root = U.$('.mapview', container);
     if (!dotBlink()) st.root.className += ' noblink';
@@ -1071,7 +1071,7 @@
   }
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-gspin], [data-gspeed]');
-    if (!b || !st.root) return;
+    if (!b) return;
     try {
       if (b.hasAttribute('data-gspin')) localStorage.setItem('sm.globeSpin', b.getAttribute('data-gspin'));
       else localStorage.setItem('sm.globeSpeed', b.getAttribute('data-gspeed'));
@@ -1109,12 +1109,12 @@
     } catch (err) { /* rien */ }
     var on = dotBlink(), cur = dotColor();
     var halo = dotHalo();
-    st.root.className = st.root.className.replace(' noblink', '').replace(' nohalo', '') + (on ? '' : ' noblink') + (halo ? '' : ' nohalo');
+    if (st.root) st.root.className = st.root.className.replace(' noblink', '').replace(' nohalo', '') + (on ? '' : ' noblink') + (halo ? '' : ' nohalo');
     U.$$('[data-dhalo]').forEach(function (x) { x.setAttribute('data-dhalo', halo ? '0' : '1'); x.className = halo ? 'on' : ''; });
     U.$$('[data-dblink]').forEach(function (x) { x.setAttribute('data-dblink', on ? '0' : '1'); x.className = on ? 'on' : ''; });
     U.$$('[data-dcolor]').forEach(function (x) { x.className = x.getAttribute('data-dcolor') === cur ? 'on' : ''; });
     // Couleur des points : les marqueurs sont redessinés avec la nouvelle couleur.
-    if (b.hasAttribute('data-dcolor')) M.refresh();
+    if (b.hasAttribute('data-dcolor') && st.root) M.refresh();
     e.stopPropagation();
   }, true);
 
@@ -1130,6 +1130,8 @@
     st.box.style.setProperty('--dot', Math.max(3, Math.round(U.clamp(st.w * 0.0121, 6, 14) * k)) + 'px');
     st.box.style.setProperty('--dotk', String(k));
   }
+  // Clignotement, halo et couleur des points : affichés dans les Réglages, à côté de la taille (demande de Matt, 26/11).
+  M.dotsHTML = dotsHTML;
   M.dotScale = dotScale;
   M.setDotScale = function (k) {
     try { localStorage.setItem('sm.dotScale', String(U.clamp(k, DOT_MIN, DOT_MAX))); } catch (e) { /* rien */ }

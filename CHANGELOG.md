@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.33.4 · 26/11/2026 · Réglages · Clignotement, halo et couleur des points
+
+- Les trois réglages des points de la carte (clignotement, halo, couleur) quittent les options de la carte et rejoignent les Réglages, sous le curseur de taille des points.
+
 ## 1.33.3 · 26/11/2026 · Ciel · Retour au ciel de la 1.32.8
 
 - Le ciel et la lune reprennent exactement le code de la 1.32.8 (étoiles, soleil, lune, gouttes, éclair, flash allégés). Les 1.32.9 et 1.33.1 les avaient modifiés à tort : le carré dans un cercle venait de la pastille de couleur des options de la carte, corrigée en 1.33.2. Le curseur de taille des points reste.
