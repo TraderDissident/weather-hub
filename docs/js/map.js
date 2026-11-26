@@ -868,7 +868,7 @@
       '<div class="mbottom"><div class="mbar"><div class="seg mstyle">' + STYLE_ORDER.map(function (k) {
         return '<button data-style="' + k + '"' + (k === st.style ? ' class="on"' : '') + '>' + tt.mapStyles[k] + '</button>';
       }).join('') + '</div>' + '<div class="seg mswitch"><button data-cards="clocks"' + (st.cards === 'clocks' ? ' class="on"' : '') + '>' + tt.clocks + '</button>' +
-        '<button data-cards="weather"' + (st.cards === 'weather' ? ' class="on"' : '') + '>' + tt.weatherCards + '</button></div>' + gclockHTML() + '</div>' +
+        '<button data-cards="weather"' + (st.cards === 'weather' ? ' class="on"' : '') + '>' + tt.weatherCards + '</button></div>' + gclockHTML() + osclockHTML() + '</div>' +
         '<div class="mcards"></div></div></div>';
     st.root = U.$('.mapview', container);
     if (!dotBlink()) st.root.className += ' noblink';
@@ -1005,7 +1005,12 @@
     }
     // Plein écran : la carte entière, aussi grande que l'écran le permet, sans débord ; le reste reste vide.
     var full = document.getElementById('app').className.indexOf('mapfull') >= 0;
-    var fullH = full ? st.root.clientHeight - U.$('.zones', st.root).offsetHeight - 2 : 0;
+    /* Place pour l'horloge de macOS : en plein écran seulement, et si l'option est choisie, le haut de l'écran reste
+       libre (22 % de la hauteur) pour la grande heure que macOS pose sur les économiseurs d'écran (Matt, 26/11). La
+       carte et le globe se logent dessous. */
+    var reserve = full && osclockOn() ? Math.round(document.getElementById('app').clientHeight * 0.22) : 0;
+    st.root.style.paddingTop = reserve && st.view === 'map' ? reserve + 'px' : '';
+    var fullH = full ? st.root.clientHeight - (reserve && st.view === 'map' ? reserve : 0) - U.$('.zones', st.root).offsetHeight - 2 : 0;
     var north = 75, south = -58;
     /* Plein écran, carte plate : toute la hauteur libre, plus de nord (jusqu'à 84°) puis plus de sud (jusqu'à 72° S),
        comme en paysage (fitLat). Avant, seul le nord grandissait et il restait du vide en haut et en bas (Matt, 26/11). */
@@ -1039,7 +1044,8 @@
     var gfull = full && st.view === 'globe', appEl = document.getElementById('app');
     // Globe en paysage : la boîte prend aussi la largeur de la rangée de boutons ; le globe reste rond, centré.
     if (st.view === 'globe' && land && !full) { W = Math.floor(availW); H = Math.round(Math.max(280, landH)); }
-    if (gfull) { W = appEl.clientWidth; H = appEl.clientHeight; }
+    if (gfull) { W = appEl.clientWidth; H = appEl.clientHeight - reserve; }
+    st.box.style.top = gfull && reserve ? reserve + 'px' : '';
     if (lay) {
       // Reste de hauteur (carte plate aux bornes de latitude) : partagé au-dessus et au-dessous, la marge reste égale.
       wrap.style.marginTop = (topY + Math.max(0, landH - H) / 2).toFixed(1) + 'px';
@@ -1134,6 +1140,20 @@
      dans les options de la carte (demande de Matt, 26/11). Rien par défaut. Elle reste quand les contrôles sont masqués. */
   function gclockPlace() { var v = spinPref('sm.globeClock', ''); return v && st.places && st.places.some(function (p) { return p.id === v; }) ? v : ''; }
   function gclockPos() { var v = spinPref('sm.globeClockPos', 'br'); return /^(tl|tr|bl|br)$/.test(v) ? v : 'br'; }
+  function osclockOn() { return spinPref('sm.osClock', '') === '1'; }
+  function osclockHTML() {
+    var on = osclockOn();
+    return '<div class="seg mosclock"><button data-osclock="' + (on ? '0' : '1') + '"' + (on ? ' class="on"' : '') + '>' + U.esc(I.t().osClock) + '</button></div>';
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-osclock]');
+    if (!b) return;
+    var on = b.getAttribute('data-osclock') === '1';
+    try { localStorage.setItem('sm.osClock', on ? '1' : ''); } catch (err) { /* rien */ }
+    U.$$('[data-osclock]').forEach(function (x) { x.setAttribute('data-osclock', on ? '0' : '1'); x.className = on ? 'on' : ''; });
+    if (st.root) M.resize(true);
+    e.stopPropagation();
+  }, true);
   function gclockHTML() {
     var tt = I.t(), cur = gclockPlace(), pos = gclockPos();
     var opts = '<option value="">' + U.esc(tt.gclockNone) + '</option>' + (st.places || []).map(function (p) {

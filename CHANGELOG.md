@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.39.0 · 26/11/2026 · Carte et globe · Place pour l'heure de macOS
+
+- Options de la carte : « Place pour l'heure de macOS (plein écran) ». En plein écran seulement, le haut de l'écran (22 % de la hauteur) reste libre pour la grande heure que macOS affiche sur les économiseurs d'écran ; la carte ou le globe, et l'horloge du globe, se logent dessous. Hors plein écran, rien ne change.
+
 ## 1.38.0 · 26/11/2026 · Globe · Horloge en plein écran
 
 - Globe en plein écran : une horloge de lieu (la même carte que sous la carte) peut s'afficher dans un coin. Options de la carte, ligne « Horloge (globe plein écran) » : le lieu (aucun par défaut) et le coin (↖ ↗ ↙ ↘). Elle reste quand les contrôles sont masqués ; un appui dessus ouvre le lieu.
