@@ -484,6 +484,18 @@ html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050
 
 .mks { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 3; pointer-events: none; }
 .mks .mk { pointer-events: auto; }
+/* Étiquettes toujours au-dessus des points des autres lieux. Carte plate : un seul bloc, l'ordre suffit. Globe :
+   les points sont dans leur propre calque (.mkdots), sous celui des étiquettes (voir placeOnGlobe). */
+.mk .mkd, .mk .mkp { z-index: 1; }
+.mk .mkl { z-index: 2; }
+.mkdots { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 3; pointer-events: none; }
+.mapbox:not(.globe) .mkdots { display: none; }
+.mapbox.globe .mks .mkd, .mapbox.globe .mks .mkp, .mapbox.globe .mks .mk.night::before { display: none; }
+.mkg { position: absolute; left: 0; top: 0; width: 0; height: 0; pointer-events: auto; cursor: pointer; will-change: transform; }
+.mkg.night::before { content: ""; position: absolute; width: calc(2.6rem * var(--dotk, 1)); height: calc(2.6rem * var(--dotk, 1));
+  margin: calc(-1.3rem * var(--dotk, 1)) 0 0 calc(-1.3rem * var(--dotk, 1)); border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 200, 110, .55) 0%, rgba(255, 170, 70, .18) 40%, rgba(255, 160, 60, 0) 70%); }
+.nohalo .mkg.night::before { display: none; }
 .mapbox .gcv { position: absolute; left: 50%; top: 50%; z-index: 1; cursor: grab; touch-action: none; }
 .mapbox.globe .mapcredit { z-index: 4; }
 .mk { position: absolute; width: 0; height: 0; cursor: pointer; }
@@ -942,6 +954,9 @@ html.phone #hbar { -webkit-order: 4; order: 4; width: 100%; }
 html.phone .iconbtn { width: 44px; height: 44px; }
 html.phone .iconbtn .ic { width: 22px; height: 22px; }
 html.phone .hside .iconbtn + .iconbtn, html.phone .hside.r .iconbtn { margin-left: 8px; }
+/* Carte sur téléphone : 4 vues à gauche, 3 boutons à droite ; un peu plus petits pour tenir sur une ligne. */
+html.phone.mapmode .iconbtn { width: 40px; height: 40px; }
+html.phone.mapmode .hside .iconbtn + .iconbtn, html.phone.mapmode .hside.r .iconbtn { margin-left: 6px; }
 html.phone #pname { font-size: 22px; }
 html.phone #dots { height: 12px; margin-top: 6px; pointer-events: none; }
 

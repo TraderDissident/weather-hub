@@ -594,12 +594,21 @@
 
   /* Carte du monde : ouvre ou referme, et charge les lieux qui n'ont pas de données fraîches. */
   // Trois boutons, un par vue (ville, liste, carte) : celui de la vue affichée est allumé.
+  /* Quatre vues : ville, mosaïque, carte plate, globe. Carte et globe sont la même page (mode « map »), dans la vue
+     enregistrée par sm.mapView ; le choix carte ou globe des options de la carte est remplacé par ces deux boutons. */
+  // globe.js n'est chargé qu'à la première ouverture de la carte : avant, on suppose le globe possible.
+  function globeOk() { return !(SM.globe && SM.globe.supported) || SM.globe.supported(); }
+  function mapView() { try { return localStorage.getItem('sm.mapView') === 'globe' && globeOk() ? 'globe' : 'map'; } catch (e) { return 'map'; } }
   function viewButtons() {
-    ['place', 'list', 'map'].forEach(function (m) {
+    ['place', 'list', 'map', 'globe'].forEach(function (m) {
       var b = U.$('[data-act=' + m + ']');
-      if (b) b.className = 'iconbtn' + (A.mode === m ? ' on' : '');
+      if (!b) return;
+      var on = m === 'map' || m === 'globe' ? A.mode === 'map' && mapView() === m : A.mode === m;
+      b.className = 'iconbtn' + (on ? ' on' : '');
+      if (m === 'globe' && !globeOk()) b.style.display = 'none';
     });
   }
+  A.viewButtons = viewButtons;
   A.showView = function (m) { if (A.mode !== m) setMode(m); };
   A.toggleMap = function () { setMode(A.mode === 'map' ? 'place' : 'map'); };
   A.rerender = function () { render(0); };
@@ -1006,7 +1015,14 @@
     el.app.addEventListener('click', function (e) {
       A.lastTouch = Date.now();
       if (e.target.closest('[data-act=place]')) { A.showView('place'); return; }
-      if (e.target.closest('[data-act=map]')) { A.showView('map'); return; }
+      var mg = e.target.closest('[data-act=map], [data-act=globe]');
+      if (mg) {
+        var want = mg.getAttribute('data-act');
+        if (A.mode === 'map' && SM.map) SM.map.setView(want);
+        else { try { localStorage.setItem('sm.mapView', want); } catch (err) { /* rien */ } A.showView('map'); }
+        viewButtons();
+        return;
+      }
       if (e.target.closest('[data-act=list]')) { A.showView('list'); return; }
       var mv = e.target.closest('.mview button');
       if (mv) { SM.map.setView(mv.getAttribute('data-view')); return; }
@@ -1015,7 +1031,7 @@
       var mc = e.target.closest('.mswitch button');
       if (mc) { SM.map.setCards(mc.getAttribute('data-cards')); return; }
       if (SM.map && SM.map.labelDragging()) return;
-      var city = e.target.closest('.mk, .mcard, .lcard');
+      var city = e.target.closest('.mk, .mkg, .mcard, .lcard');
       if (city) { A.goTo(city.getAttribute('data-place')); return; }
       var b = e.target.closest('[data-sheet]');
       if (b) { A.open(b.getAttribute('data-sheet')); return; }
@@ -1086,7 +1102,8 @@
           // À gauche, les trois vues ; à droite, les outils de la carte (sur la carte seulement), les réglages et les lieux.
           '<div class="hside"><button class="iconbtn" data-act="place" aria-label="City">' + IC.ui('card') + '</button>' +
           '<button class="iconbtn" data-act="list" aria-label="All places">' + IC.ui('grid') + '</button>' +
-          '<button class="iconbtn" data-act="map" aria-label="Map">' + IC.ui('globe') + '</button></div>' +
+          '<button class="iconbtn" data-act="map" aria-label="Map">' + IC.ui('map') + '</button>' +
+          '<button class="iconbtn" data-act="globe" aria-label="Globe">' + IC.ui('globe') + '</button></div>' +
           '<div class="ptitle"><div><span id="pname"></span><span id="pcountry"></span><span id="badge"></span></div><div id="dots"></div></div>' +
           '<div id="hbar"></div>' +
           '<div class="hside r"><button class="iconbtn mapctl" data-act="mapfull" aria-label="Full screen">' + IC.ui('expand') + '</button>' +

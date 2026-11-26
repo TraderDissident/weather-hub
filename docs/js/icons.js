@@ -110,6 +110,8 @@
     arrowUp: '<path d="M12 20V5M6 10.5L12 4.5l6 6" stroke-width="2.2"/>',
     arrowDown: '<path d="M12 4v15M6 13.5l6 6 6-6" stroke-width="2.2"/>',
     sliders: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+    // Carte plate : une carte pliée en trois volets.
+    map: '<path d="M9 4.5 3.5 6.5v13l5.5-2 6 2 5.5-2v-13l-5.5 2-6-2z"/><path d="M9 4.5v13M15 6.5v13"/>',
     globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3z"/>',
     trash: '<path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13"/>',
     up: '<path d="M6 15l6-6 6 6"/>',

@@ -514,6 +514,21 @@
       if (!mk._g) { mk._g = true; mk.style.left = '0'; mk.style.top = '0'; }
       mk._x = cx + p.x; mk._y = cy + p.y;
       if (p.front) place(mk, mk._x, mk._y);
+      /* Globe : chaque lieu, déplacé par transformation, forme un bloc à part ; le point d'un lieu passait donc
+         par-dessus l'étiquette d'un autre (Matt, 26/11). Les points du globe sont dessinés dans un calque à eux,
+         sous toutes les étiquettes ; ceux des étiquettes sont masqués (CSS). */
+      var gd = mk._gd;
+      if (!gd) {
+        gd = mk._gd = document.createElement('div');
+        gd.className = 'mkg' + (ci.night ? ' night' : '');
+        gd.setAttribute('data-place', ci.p.id);
+        var d0 = U.$('.mkd', mk), p0 = U.$('.mkp', mk);
+        gd.innerHTML = (d0 ? d0.outerHTML : '') + (p0 ? p0.outerHTML : '');
+        U.$('.mkdots', st.box).appendChild(gd);
+        gd._g = true;
+      }
+      if (gd.style.display !== disp) gd.style.display = disp;
+      if (p.front) place(gd, mk._x, mk._y);
     });
     var ms = SM.app.nowMs(), sun = SM.astro.subSolar(ms), moon = SM.astro.subLunar(ms);
     var ps = G.project(sun.lat, sun.lon), pm = G.project(moon.lat, moon.lon);
@@ -848,12 +863,11 @@
       '<div class="mapview"><p class="mrotate">' + U.esc(tt.rotateForMap) + '</p><div class="mapwrap">' +
         '<div class="zones">' + rulerHTML() + '</div>' +
         '<div class="mapbox"><canvas></canvas><div class="msun"><i></i></div><div class="mmoon"></div>' +
-        '<svg class="mklines" aria-hidden="true"></svg><div class="mks"></div><p class="mapcredit">' + U.esc(tt.mapCredit) + '</p>' + spinHTML() + '</div>' +
+        '<svg class="mklines" aria-hidden="true"></svg><div class="mkdots"></div><div class="mks"></div><p class="mapcredit">' + U.esc(tt.mapCredit) + '</p>' + spinHTML() + '</div>' +
       '</div>' +
       '<div class="mbottom"><div class="mbar"><div class="seg mstyle">' + STYLE_ORDER.map(function (k) {
         return '<button data-style="' + k + '"' + (k === st.style ? ' class="on"' : '') + '>' + tt.mapStyles[k] + '</button>';
-      }).join('') + '</div>' + (SM.globe.supported() ? '<div class="seg mview"><button data-view="map"' + (st.view === 'map' ? ' class="on"' : '') + '>' + tt.viewMap + '</button>' +
-        '<button data-view="globe"' + (st.view === 'globe' ? ' class="on"' : '') + '>' + tt.viewGlobe + '</button></div>' : '') + '<div class="seg mswitch"><button data-cards="clocks"' + (st.cards === 'clocks' ? ' class="on"' : '') + '>' + tt.clocks + '</button>' +
+      }).join('') + '</div>' + '<div class="seg mswitch"><button data-cards="clocks"' + (st.cards === 'clocks' ? ' class="on"' : '') + '>' + tt.clocks + '</button>' +
         '<button data-cards="weather"' + (st.cards === 'weather' ? ' class="on"' : '') + '>' + tt.weatherCards + '</button></div></div>' +
         '<div class="mcards"></div></div></div>';
     st.root = U.$('.mapview', container);
@@ -926,6 +940,7 @@
     // Les anciens points et les anciennes cartes sont vidés après remplacement (voir U.release).
     var oldMk = U.$$('.mk', st.box), oldCards = U.$$('.mcard', st.root);
     U.$('.mks', st.box).innerHTML = infos.map(markerHTML).join('');
+    U.$('.mkdots', st.box).innerHTML = '';
     st.infos = infos;
     if (st.view === 'globe') placeOnGlobe(true);
     U.$('.mcards', st.root).innerHTML = infos.map(cardHTML).join('');
@@ -949,7 +964,7 @@
     if (!st.root || (view === 'globe' && !SM.globe.supported())) return;
     st.view = view;
     try { localStorage.setItem('sm.mapView', view); } catch (e) { /* rien */ }
-    U.$$('.mview button').forEach(function (b) { b.className = b.getAttribute('data-view') === view ? 'on' : ''; });
+    if (SM.app.viewButtons) SM.app.viewButtons();
     if (view === 'map') { SM.globe.detach(); U.$$('.mk', st.box).forEach(function (mk) { mk.style.display = ''; }); st.sunEl.style.display = st.moonEl.style.display = ''; }
     M.refresh();
     M.resize(true);
@@ -1212,7 +1227,7 @@
     // étiquette, carte de ville, bloc qui ouvre une feuille, heure par heure, jours, mode édition, feuille ouverte).
     if (!app || !t.closest || /\bopen\b/.test((document.getElementById('sheet') || {}).className || '') || (SM.ui && SM.ui.editing)) return;
     if (t.closest('button, a, input, select, textarea, label, [data-act], [data-place], [data-sheet], [data-hview], [data-edit], [data-add], [data-remove], ' +
-      '.mk, .mkl, .gctl, #hbar, .sheet, #dots i, .drow, .retry, .status, .hscroll, .tminus, .tslot, .lcard, .mcard')) return;
+      '.mk, .mkg, .mkl, .gctl, #hbar, .sheet, #dots i, .drow, .retry, .status, .hscroll, .tminus, .tslot, .lcard, .mcard')) return;
     if (tapXY && Math.abs(e.clientX - tapXY[0]) + Math.abs(e.clientY - tapXY[1]) > 10) return;
     if (M.labelDragging()) return;
     var off = app.className.indexOf(' nochrome') >= 0;

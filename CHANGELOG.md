@@ -1,5 +1,10 @@
 # Journal des modifications
 
+## 1.37.0 · 26/11/2026 · Vues · Carte et globe séparés
+
+- Quatre vues dans l'en-tête : ville, mosaïque, carte (nouvelle icône de carte pliée) et globe. Le choix carte ou globe disparaît des options de la carte. Sur téléphone, les boutons de la carte sont un peu plus petits pour tenir sur une ligne.
+- Globe : les points des lieux ne passent plus par-dessus les étiquettes des autres lieux ; ils sont dessinés dans un calque à eux, sous toutes les étiquettes.
+
 ## 1.36.2 · 26/11/2026 · Carte · Plein écran sur toute la hauteur
 
 - Carte plate en plein écran : elle prend toute la hauteur libre, avec plus de nord puis plus de sud (jusqu'à 85° N et 80° S) ; contrôles masqués, l'en-tête libère aussi sa place.
