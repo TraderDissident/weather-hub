@@ -1,4 +1,4 @@
-# Station Météo · plan de développement
+# Weather Hub (ex-Station Météo) · plan de développement
 
 Application web de météo pour un iPad mini sous iOS 12.5.8, posé à demeure et utilisé comme station météo. Plan rédigé le 16/11/2026, à exécuter par Opus.
 

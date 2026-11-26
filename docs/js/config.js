@@ -1,4 +1,4 @@
-/* Station Météo · réglages fixes. Code limité à ES2017 (Safari 12). */
+/* Weather Hub · réglages fixes. Code limité à ES2017 (Safari 12). */
 var SM = window.SM || {};
 window.SM = SM;
 
@@ -7,7 +7,7 @@ window.SM = SM;
    arrivées d'un lieu figées une seconde pile). Les seuls non passifs sont posés sur l'élément qui en a besoin, et
    seulement pendant qu'il sert : poignées de la feuille des lieux, blocs en mode édition, carte du monde. */
 
-SM.VERSION = '1.36.0';
+SM.VERSION = '1.36.1';
 
 // D'ouest en est, comme sur une carte classique.
 SM.DEFAULT_PLACES = [

@@ -247,7 +247,7 @@
   function exportText() {
     var data = {};
     backupKeys().forEach(function (k) { data[k] = localStorage.getItem(k); });
-    return JSON.stringify({ app: 'station-meteo', version: SM.VERSION, date: new Date().toISOString(), data: data }, null, 1);
+    return JSON.stringify({ app: 'weather-hub', version: SM.VERSION, date: new Date().toISOString(), data: data }, null, 1);
   }
   // Plein écran, sur le modèle du journal : le texte de la sauvegarde, à copier (ou télécharger sur un ordinateur),
   // ou une zone où coller une sauvegarde pour l'appliquer.
@@ -275,7 +275,7 @@
       if (act === 'file') {
         var a = document.createElement('a'), d = new Date();
         a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(txt);
-        a.download = 'station-meteo-' + d.getFullYear() + '-' + U.pad(d.getMonth() + 1) + '-' + U.pad(d.getDate()) + '.json';
+        a.download = 'weather-hub-' + d.getFullYear() + '-' + U.pad(d.getMonth() + 1) + '-' + U.pad(d.getDate()) + '.json';
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
       }
       if (act === 'apply') applyBackup(area.value, b);
@@ -284,7 +284,8 @@
   function applyBackup(text, btn) {
     var tt = t(), obj = null;
     try { obj = JSON.parse(text); } catch (e) { obj = null; }
-    var data = obj && obj.app === 'station-meteo' && obj.data;
+    // Les sauvegardes d'avant le nouveau nom (« station-meteo ») restent lisibles.
+    var data = obj && (obj.app === 'weather-hub' || obj.app === 'station-meteo') && obj.data;
     var keys = data ? Object.keys(data).filter(function (k) { return k.indexOf('sm.') === 0 && !/^sm\.(w\.|log|alive|mapSize|dotScale)/.test(k) && typeof data[k] === 'string'; }) : [];
     if (!keys.length) { btn.textContent = tt.importBad; setTimeout(function () { btn.textContent = tt.importApply; }, 2500); return; }
     var places = null;

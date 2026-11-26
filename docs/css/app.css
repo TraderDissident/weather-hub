@@ -1,4 +1,4 @@
-/* Station Météo · feuille de style, compatible Safari 12 (pas de gap en flex, pas d'inset, pas de clamp). */
+/* Weather Hub · feuille de style, compatible Safari 12 (pas de gap en flex, pas d'inset, pas de clamp). */
 
 /* Pas de règle universelle sur ::before et ::after : elle obligeait Safari à calculer deux pseudo-éléments pour chacun
    des 1 700 éléments à chaque construction d'écran (mesuré sur l'iPad : des milliers créés puis détruits). Seuls les

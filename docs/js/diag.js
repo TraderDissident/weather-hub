@@ -110,7 +110,7 @@
     // Texte complet à copier : l'état de l'appareil, puis le journal du plus récent au plus ancien.
     report: function () {
       var a = SM.app, head = [
-        'Station Météo ' + SM.VERSION + ' · ' + stamp(Date.now()),
+        'Weather Hub ' + SM.VERSION + ' · ' + stamp(Date.now()),
         navigator.userAgent,
         'screen ' + screen.width + '×' + screen.height + ' · window ' + innerWidth + '×' + innerHeight + ' · ×' + (window.devicePixelRatio || 1) +
           ' · standalone ' + (navigator.standalone ? 'yes' : 'no') + ' · ' + (navigator.onLine ? 'online' : 'offline'),

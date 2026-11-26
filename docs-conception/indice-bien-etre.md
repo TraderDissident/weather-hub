@@ -1,6 +1,6 @@
 # Indice de bien-être météo sur 10 — document de conception
 
-Document de travail pour Station Météo. Rien n'est développé. Rien n'est publié. Les barèmes ci-dessous sont une proposition à discuter.
+Document de travail pour Weather Hub (ex-Station Météo). Rien n'est développé. Rien n'est publié. Les barèmes ci-dessous sont une proposition à discuter.
 
 ## Résumé
 

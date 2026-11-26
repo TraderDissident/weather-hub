@@ -8,7 +8,7 @@ cd "${0:A:h}/.."
 tools/check.sh
 VERSION=$(sed -n "s/^SM.VERSION = '\(.*\)';/\1/p" docs/js/config.js)
 git add -A
-git commit -m "Station Météo $VERSION" || true
+git commit -m "Weather Hub $VERSION" || true
 git tag "v$VERSION" 2>/dev/null || true
 git push origin main
 git push origin "v$VERSION"

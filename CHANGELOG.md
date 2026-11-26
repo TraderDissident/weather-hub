@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.36.1 · 26/11/2026 · App · Nouveau nom : Weather Hub
+
+- L'app s'appelle Weather Hub partout : titre de la page, nom sous l'icône de l'écran d'accueil (manifeste et réglage iOS), bannière « Installer Weather Hub » dans Safari, en-tête du journal, fichier de sauvegarde (les sauvegardes d'avant restent lisibles), page de test. Une icône déjà posée sur l'écran d'accueil garde l'ancien nom jusqu'à ce qu'on la réinstalle.
+
 ## 1.36.0 · 26/11/2026 · Lieux · Tri rapide par vue
 
 - Feuille Lieux, sous les onglets : « Trier par fuseau horaire » range les lieux de la vue choisie d'ouest en est (décalage horaire du moment, puis longitude), et deux boutons « Copier l'ordre » reprennent l'ordre de l'une des deux autres vues. Seule la vue de l'onglet change.
