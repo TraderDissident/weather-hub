@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.34.7 · 26/11/2026 · Carte · Marge du haut sur ordinateur
+
+- Sur ordinateur et dans un navigateur, la page gardait en haut une bande de 20 points prévue pour la barre d'état de l'iPad. Contrôles masqués, elle s'ajoutait à la marge du haut. Elle disparaît hors de l'app de l'écran d'accueil : la marge du haut est égale aux autres. Sur l'iPad (écran d'accueil), la marge part de sous la barre d'état.
+
 ## 1.34.6 · 26/11/2026 · Carte · Marge du haut égale aux autres
 
 - La marge du haut se mesure maintenant jusqu'aux chiffres des heures, et plus jusqu'au haut de leur bande (les chiffres sont en bas de la bande, d'où une marge visible trop grande). Elle est égale aux marges de gauche, de droite et du bas, contrôles affichés ou masqués.

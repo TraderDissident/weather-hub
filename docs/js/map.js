@@ -1211,7 +1211,7 @@
     if (tapXY && Math.abs(e.clientX - tapXY[0]) + Math.abs(e.clientY - tapXY[1]) > 10) return;
     if (M.labelDragging()) return;
     var off = app.className.indexOf(' nochrome') >= 0;
-    app.className = off ? app.className.replace(' nochrome', '') : app.className + ' nochrome';
+    app.className = off ? app.className.replace(' nochrome', '') : app.className.replace(' nobar', '') + ' nochrome' + (navigator.standalone ? '' : ' nobar');
     // Paysage : la carte reprend ou rend la hauteur de l'en-tête.
     M.resize();
   });

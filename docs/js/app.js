@@ -113,7 +113,8 @@
     var narrow = (land ? w * 0.55 : w) < 31 * base;
     // « nochrome » (contrôles masqués d'un appui, voir map.js) survit aux mises en page tant qu'on reste sur la carte.
     var nochrome = A.mode === 'map' && el.app.className.indexOf(' nochrome') >= 0;
-    el.app.className = (land ? 'land' : 'port') + (narrow ? ' narrow' : '') + (A.mode === 'map' ? ' mapmode' + (A.mapFull ? ' mapfull' : '') : '') + (A.mode === 'list' ? ' listmode' : '') + (nochrome ? ' nochrome' : '');
+    // « nobar » : pas de barre d'état iOS par-dessus la page (navigateur, ordinateur) ; la marge réservée en haut est inutile.
+    el.app.className = (land ? 'land' : 'port') + (narrow ? ' narrow' : '') + (A.mode === 'map' ? ' mapmode' + (A.mapFull ? ' mapfull' : '') : '') + (A.mode === 'list' ? ' listmode' : '') + (nochrome ? ' nochrome' : '') + (navigator.standalone ? '' : ' nobar');
     // Bouton plein écran de l'en-tête : flèches vers l'extérieur pour y entrer, vers l'intérieur pour en sortir.
     var fb = U.$('header [data-act=mapfull]'), want = A.mapFull ? 'shrink' : 'expand';
     if (fb && fb.getAttribute('data-icon') !== want) { fb.innerHTML = IC.ui(want); fb.setAttribute('data-icon', want); }

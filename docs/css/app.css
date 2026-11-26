@@ -709,6 +709,10 @@ header.top { position: relative; }
 .nochrome header.top, .nochrome .gctl, .nochrome .mapcredit, .nochrome #hbar { visibility: hidden; }
 /* Paysage : l'en-tête masqué sort de la mise en page, la carte reprend sa hauteur (voir M.resize). */
 .land.mapmode.nochrome:not(.mapfull) header.top { position: absolute; left: 0; right: 0; top: 20px; top: max(20px, env(safe-area-inset-top)); }
+/* Sans barre d'état iOS par-dessus la page (navigateur, ordinateur), la bande de 20 points réservée en haut disparaît
+   aussi : la marge du haut part du bord de la fenêtre, comme celles des côtés. Sur l'iPad (écran d'accueil), elle part
+   de sous la barre d'état. */
+.land.mapmode.nochrome.nobar:not(.mapfull) #ui { padding-top: 0; }
 /* Paysage hors plein écran : marges posées par M.resize (une seule valeur partout) ; plus de centrage automatique. */
 .land.mapmode:not(.mapfull) .mapview { overflow: hidden; }
 .land.mapmode:not(.mapfull) .mapwrap { margin-top: 0; }
