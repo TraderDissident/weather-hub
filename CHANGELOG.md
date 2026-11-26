@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.33.3 · 26/11/2026 · Ciel · Retour au ciel de la 1.32.8
+
+- Le ciel et la lune reprennent exactement le code de la 1.32.8 (étoiles, soleil, lune, gouttes, éclair, flash allégés). Les 1.32.9 et 1.33.1 les avaient modifiés à tort : le carré dans un cercle venait de la pastille de couleur des options de la carte, corrigée en 1.33.2. Le curseur de taille des points reste.
+
 ## 1.33.2 · 26/11/2026 · Carte · Pastille « couleur selon la température » sans carré
 
 - Options de la carte : la pastille multicolore (couleur des points selon la température) montrait un carré dans un cercle. Son dégradé s'arrêtait avant la bordure et se répétait dessous ; il couvre maintenant toute la pastille.

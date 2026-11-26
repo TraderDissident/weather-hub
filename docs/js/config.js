@@ -7,7 +7,7 @@ window.SM = SM;
    arrivées d'un lieu figées une seconde pile). Les seuls non passifs sont posés sur l'élément qui en a besoin, et
    seulement pendant qu'il sert : poignées de la feuille des lieux, blocs en mode édition, carte du monde. */
 
-SM.VERSION = '1.33.2';
+SM.VERSION = '1.33.3';
 
 // D'ouest en est, comme sur une carte classique.
 SM.DEFAULT_PLACES = [
