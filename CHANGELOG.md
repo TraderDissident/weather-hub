@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.40.4 · 26/11/2026 · Carte · Mise à l'échelle sous l'heure de macOS
+
+- Carte plate en plein écran avec « Place pour l'heure de macOS » : comme le globe, elle est réduite d'un bloc pour tenir sous la place réservée, en gardant ses latitudes ; points, étiquettes et règle des heures suivent la même proportion. Avant, elle descendait en perdant du sud. Le glisser des étiquettes tient compte de la réduction.
+
 ## 1.40.3 · 26/11/2026 · Globe · Points et étiquettes à l'échelle
 
 - Globe en plein écran avec « Place pour l'heure de macOS » : quand le globe rapetisse, ses points (et leur halo) et ses étiquettes rapetissent dans la même proportion. L'écartement des étiquettes en tient compte.

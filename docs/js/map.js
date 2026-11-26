@@ -830,7 +830,8 @@
     if (!drag) return;
     // Bouton relâché hors de la fenêtre : on termine là, l'étiquette ne reste pas accrochée au curseur.
     if (e.type === 'mousemove' && e.buttons === 0) { dragEnd(); return; }
-    var pt = pointOf(e), dx = pt[0] - drag.sx, dy = pt[1] - drag.sy, p = drag.p;
+    // Carte réduite d'un bloc (place pour l'heure de macOS) : le doigt bouge à l'écran, l'étiquette dans la carte.
+    var pt = pointOf(e), dx = (pt[0] - drag.sx) / (st.ms || 1), dy = (pt[1] - drag.sy) / (st.ms || 1), p = drag.p;
     if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 6) return;
     drag.moved = true;
     if (e.cancelable) e.preventDefault();
@@ -1068,8 +1069,9 @@
        libre (22 % de la hauteur) pour la grande heure que macOS pose sur les économiseurs d'écran (Matt, 26/11). La
        carte et le globe se logent dessous. */
     var reserve = full && osclockOn() ? Math.round(document.getElementById('app').clientHeight * 0.22) : 0;
-    st.root.style.paddingTop = reserve && st.view === 'map' ? reserve + 'px' : '';
-    var fullH = full ? st.root.clientHeight - (reserve && st.view === 'map' ? reserve : 0) - U.$('.zones', st.root).offsetHeight - 2 : 0;
+    // Carte plate : mise en page comme sans réserve, puis le tout réduit sous la réserve (voir la fin de M.resize).
+    st.root.style.paddingTop = '';
+    var fullH = full ? st.root.clientHeight - U.$('.zones', st.root).offsetHeight - 2 : 0;
     var north = 75, south = -58;
     /* Plein écran, carte plate : toute la hauteur libre, plus de nord (jusqu'à 84°) puis plus de sud (jusqu'à 72° S),
        comme en paysage (fitLat). Avant, seul le nord grandissait et il restait du vide en haut et en bas (Matt, 26/11). */
@@ -1147,6 +1149,19 @@
     M.tick(true);
     if (st.view === 'globe') placeOnGlobe(true); else layoutLabels();
     alignCards();
+    /* Carte plate en plein écran avec « Place pour l'heure de macOS » : la carte garde ses latitudes, ses points, ses
+       étiquettes et sa règle des heures, et le tout est réduit d'un bloc pour tenir sous la réserve, centré dans la
+       hauteur qui reste (Matt, 26/11 : « la map monde devrait aussi se mettre à l'échelle », comme le globe). */
+    var mw = U.$('.mapwrap', st.root);
+    mw.style.webkitTransform = mw.style.transform = '';
+    st.ms = 1;
+    if (full && st.view === 'map' && reserve) {
+      var rr = st.root.getBoundingClientRect(), wr = mw.getBoundingClientRect(), dispo = rr.height - reserve;
+      var s = Math.min(1, dispo / Math.max(1, wr.height)), ty = rr.top + reserve + (dispo - s * wr.height) / 2 - wr.top;
+      mw.style.webkitTransformOrigin = mw.style.transformOrigin = '50% 0';
+      mw.style.webkitTransform = mw.style.transform = 'translate3d(0,' + ty.toFixed(1) + 'px,0) scale(' + s.toFixed(4) + ')';
+      st.ms = s;
+    }
   };
   /* Bande des cartes sous la carte : la première carte commence exactement au bord gauche de la carte du monde
      (et la dernière finit à son bord droit), au lieu d'une marge fixe qui la décalait de quelques points. */
