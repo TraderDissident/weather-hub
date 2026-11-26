@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.34.2 · 26/11/2026 · Carte · Masquer les contrôles d'un appui
+
+- Carte et globe, en plein écran ou non : un appui (ou un clic) sur un endroit vide masque les boutons de l'en-tête, la pastille lecture/pause et les crédits ; l'appui suivant les remontre. Quitter la carte les remontre aussi.
+
 ## 1.34.1 · 26/11/2026 · Carte · Alignée sur les boutons
 
 - En paysage, la carte, le globe et la rangée de cartes du bas commencent et finissent exactement au bord des boutons de l'en-tête. Quand la hauteur manque, la carte plate rogne un peu le sud (au plus jusqu'à 45° S, sous l'Australie et Tahiti) au lieu de se rétrécir.

@@ -705,8 +705,8 @@ header.top { position: relative; }
    restent par-dessus, à leur place. */
 .mapbox.gfull { position: fixed; top: 0; left: 0; z-index: 0; border-radius: 0; box-shadow: none; }
 .mapfull header.top { z-index: 6; }
-/* Contrôles masqués par un appui sur un endroit vide du globe (voir map.js) ; l'appui suivant les remontre. */
-.nochrome header.top, .nochrome .gctl, .nochrome .mapcredit { visibility: hidden; }
+/* Contrôles masqués par un appui sur un endroit vide de la carte ou du globe (voir map.js) ; l'appui suivant les remontre. */
+.nochrome header.top, .nochrome .gctl, .nochrome .mapcredit, .nochrome #hbar { visibility: hidden; }
 .mapfull .mapview { -webkit-overflow-scrolling: auto; }
 
 /* Lieux : poignée de glisser-déposer */
