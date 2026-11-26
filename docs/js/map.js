@@ -481,8 +481,8 @@
       '<div class="srow">' + IC.ui('sunrise') + I.hm(rise) + '<span></span>' + IC.ui('sunset') + I.hm(set) + '</div>';
   }
 
-  function cardHTML(ci) {
-    var tt = I.t(), cols = ci.sky.cols, isClock = st.cards === 'clocks';
+  function cardHTML(ci, forceClock) {
+    var tt = I.t(), cols = ci.sky.cols, isClock = forceClock || st.cards === 'clocks';
     var bg = isClock ? '' : ' style="background-image:linear-gradient(to bottom,' + U.rgb(cols[0]) + ' 0%,' + U.rgb(cols[1]) + ' 60%,' + U.rgb(cols[2]) + ' 100%)"';
     var wx = ci.c ? IC.weather(CO.icon(ci.c.code, ci.sky.alt > -1), 'mci') : '';
     var hl = ci.d ? '<span class="hl">' + tt.max + ' ' + I.temp(ci.d.max) + ' · ' + tt.min + ' ' + I.temp(ci.d.min) + '</span>' : '';
@@ -863,12 +863,12 @@
       '<div class="mapview"><p class="mrotate">' + U.esc(tt.rotateForMap) + '</p><div class="mapwrap">' +
         '<div class="zones">' + rulerHTML() + '</div>' +
         '<div class="mapbox"><canvas></canvas><div class="msun"><i></i></div><div class="mmoon"></div>' +
-        '<svg class="mklines" aria-hidden="true"></svg><div class="mkdots"></div><div class="mks"></div><p class="mapcredit">' + U.esc(tt.mapCredit) + '</p>' + spinHTML() + '</div>' +
+        '<svg class="mklines" aria-hidden="true"></svg><div class="mkdots"></div><div class="mks"></div><div class="gclock"></div><p class="mapcredit">' + U.esc(tt.mapCredit) + '</p>' + spinHTML() + '</div>' +
       '</div>' +
       '<div class="mbottom"><div class="mbar"><div class="seg mstyle">' + STYLE_ORDER.map(function (k) {
         return '<button data-style="' + k + '"' + (k === st.style ? ' class="on"' : '') + '>' + tt.mapStyles[k] + '</button>';
       }).join('') + '</div>' + '<div class="seg mswitch"><button data-cards="clocks"' + (st.cards === 'clocks' ? ' class="on"' : '') + '>' + tt.clocks + '</button>' +
-        '<button data-cards="weather"' + (st.cards === 'weather' ? ' class="on"' : '') + '>' + tt.weatherCards + '</button></div></div>' +
+        '<button data-cards="weather"' + (st.cards === 'weather' ? ' class="on"' : '') + '>' + tt.weatherCards + '</button></div>' + gclockHTML() + '</div>' +
         '<div class="mcards"></div></div></div>';
     st.root = U.$('.mapview', container);
     if (!dotBlink()) st.root.className += ' noblink';
@@ -943,7 +943,8 @@
     U.$('.mkdots', st.box).innerHTML = '';
     st.infos = infos;
     if (st.view === 'globe') placeOnGlobe(true);
-    U.$('.mcards', st.root).innerHTML = infos.map(cardHTML).join('');
+    U.$('.mcards', st.root).innerHTML = infos.map(function (ci) { return cardHTML(ci); }).join('');
+    gclockFill();
     alignCards();
     oldMk.concat(oldCards).forEach(function (n) { n.textContent = ''; });
     st.infos = infos;
@@ -1093,11 +1094,14 @@
     // Entre deux minutes, seules les aiguilles des horloges bougent : sans horloges à l'écran (cartes météo, ou plein
     // écran qui les masque), rien à calculer. Avant : l'heure de chaque lieu recalculée chaque seconde, pour rien.
     var hands = st.cards === 'clocks' && !SM.app.mapFull;
-    if (!force && st.minuteKey === minute && !hands) return;
-    var cards = U.$$('.mcard', st.root), mks = U.$$('.mk', st.box);
+    // Horloge du globe en plein écran : ses aiguilles bougent chaque seconde, elles aussi.
+    var gcId = gclockPlace(), gcCard = gcId && st.view === 'globe' && SM.app.mapFull ? U.$('.gclock .mcard', st.box) : null;
+    if (!force && st.minuteKey === minute && !hands && !gcCard) return;
+    var cards = U.$$('.mcards .mcard', st.root), mks = U.$$('.mk', st.box);
     st.infos.forEach(function (ci, i) {
       var wl = I.wall(nowS, ci.tz, ci.w ? ci.w.offset : 0);
       var card = cards[i];
+      if (gcCard && ci.p.id === gcId) tickCard(gcCard, ci, wl, ms, nowS, force || st.minuteKey !== minute);
       if (card && hands) {
         var sec = wl.s, mn = wl.mi + sec / 60, hr = (wl.h % 12) + mn / 60;
         var hs = U.$$('line.hh, line.mh, line.sh', card);
@@ -1124,6 +1128,58 @@
       updateRuler(ms);
     }
   };
+
+  /* ---------- horloge sur le globe en plein écran ---------- */
+  /* Une carte horloge (la même que sous la carte) posée dans un coin du globe en plein écran : lieu et coin choisis
+     dans les options de la carte (demande de Matt, 26/11). Rien par défaut. Elle reste quand les contrôles sont masqués. */
+  function gclockPlace() { var v = spinPref('sm.globeClock', ''); return v && st.places && st.places.some(function (p) { return p.id === v; }) ? v : ''; }
+  function gclockPos() { var v = spinPref('sm.globeClockPos', 'br'); return /^(tl|tr|bl|br)$/.test(v) ? v : 'br'; }
+  function gclockHTML() {
+    var tt = I.t(), cur = gclockPlace(), pos = gclockPos();
+    var opts = '<option value="">' + U.esc(tt.gclockNone) + '</option>' + (st.places || []).map(function (p) {
+      return '<option value="' + U.esc(p.id) + '"' + (p.id === cur ? ' selected' : '') + '>' + U.esc(I.place(p).name) + '</option>';
+    }).join('');
+    var arrows = { tl: '↖', tr: '↗', bl: '↙', br: '↘' };
+    return '<div class="seg mgclock"><span class="mglab">' + U.esc(tt.gclock) + '</span><select class="gcsel" aria-label="' + U.esc(tt.gclock) + '">' + opts + '</select>' +
+      ['tl', 'tr', 'bl', 'br'].map(function (k) {
+        return '<button data-gcpos="' + k + '"' + (k === pos ? ' class="on"' : '') + ' aria-label="' + U.esc(tt.gclockPos[k]) + '">' + arrows[k] + '</button>';
+      }).join('') + '</div>';
+  }
+  function gclockFill() {
+    var box = st.box && U.$('.gclock', st.box);
+    if (!box) return;
+    var id = gclockPlace(), ci = id && st.infos ? st.infos.filter(function (x) { return x.p.id === id; })[0] : null;
+    box.className = 'gclock pos-' + gclockPos() + (ci ? ' on' : '');
+    box.innerHTML = ci ? cardHTML(ci, true) : '';
+    if (ci) { var nowS = Math.floor(SM.app.nowMs() / 1000); tickCard(U.$('.mcard', box), ci, I.wall(nowS, ci.tz, ci.w ? ci.w.offset : 0), SM.app.nowMs(), nowS, true); }
+  }
+  function tickCard(card, ci, wl, ms, nowS, full) {
+    var sec = wl.s, mn = wl.mi + sec / 60, hr = (wl.h % 12) + mn / 60;
+    var hs = U.$$('line.hh, line.mh, line.sh', card);
+    if (hs.length === 3) {
+      hs[0].setAttribute('transform', 'rotate(' + (hr * 30).toFixed(2) + ' 50 50)');
+      hs[1].setAttribute('transform', 'rotate(' + (mn * 6).toFixed(2) + ' 50 50)');
+      hs[2].setAttribute('transform', 'rotate(' + (sec * 6) + ' 50 50)');
+    }
+    if (!full) return;
+    var tEl = U.$('.mctime', card), dEl = U.$('.mcday', card), now = U.$('.dbar2 .now', card);
+    if (tEl) tEl.textContent = I.hm(wl);
+    if (dEl) dEl.textContent = dayLabel(ci.p, nowS) + ', ' + offsetLabel(cityOffsetMin(ci.p, nowS) - (-new Date(ms).getTimezoneOffset()));
+    if (now) now.style.left = ((wl.h * 60 + wl.mi) / 1440 * 100).toFixed(2) + '%';
+  }
+  document.addEventListener('change', function (e) {
+    if (!e.target.classList || !e.target.classList.contains('gcsel')) return;
+    try { localStorage.setItem('sm.globeClock', e.target.value); } catch (err) { /* rien */ }
+    gclockFill(); M.tick(true);
+  });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-gcpos]');
+    if (!b) return;
+    try { localStorage.setItem('sm.globeClockPos', b.getAttribute('data-gcpos')); } catch (err) { /* rien */ }
+    U.$$('[data-gcpos]').forEach(function (x) { x.className = x === b ? 'on' : ''; });
+    gclockFill();
+    e.stopPropagation();
+  }, true);
 
   M.active = function () { return !!(st.root && document.body.contains(st.root)); };
   M.leave = function () { SM.globe.detach(); freeLayers(); free(st.cv); st.root = null; st.infos = null; st.cv = st.ctx = null; st.w = st.h = 0; };

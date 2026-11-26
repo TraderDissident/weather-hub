@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.38.0 · 26/11/2026 · Globe · Horloge en plein écran
+
+- Globe en plein écran : une horloge de lieu (la même carte que sous la carte) peut s'afficher dans un coin. Options de la carte, ligne « Horloge (globe plein écran) » : le lieu (aucun par défaut) et le coin (↖ ↗ ↙ ↘). Elle reste quand les contrôles sont masqués ; un appui dessus ouvre le lieu.
+
 ## 1.37.0 · 26/11/2026 · Vues · Carte et globe séparés
 
 - Quatre vues dans l'en-tête : ville, mosaïque, carte (nouvelle icône de carte pliée) et globe. Le choix carte ou globe disparaît des options de la carte. Sur téléphone, les boutons de la carte sont un peu plus petits pour tenir sur une ligne.

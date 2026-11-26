@@ -488,6 +488,20 @@ html.mapmode { background: radial-gradient(120% 90% at 50% 35%, #0d1a33 0%, #050
    les points sont dans leur propre calque (.mkdots), sous celui des étiquettes (voir placeOnGlobe). */
 .mk .mkd, .mk .mkp { z-index: 1; }
 .mk .mkl { z-index: 2; }
+/* Horloge sur le globe en plein écran (voir gclockFill dans map.js) : dans un coin, à la marge commune. */
+.gclock { display: none; position: absolute; z-index: 5; }
+.mapfull .mapbox.globe .gclock.on { display: block; }
+.gclock .mcard { margin: 0; }
+.gclock.pos-tl { top: 1rem; left: 1rem; } .gclock.pos-tr { top: 1rem; right: 1rem; }
+.gclock.pos-br { bottom: 1rem; right: 1rem; } .gclock.pos-bl { bottom: 4.6rem; left: 1rem; }
+/* En haut, sous l'en-tête quand les contrôles sont affichés. */
+.mapfull:not(.nochrome) .gclock.pos-tl, .mapfull:not(.nochrome) .gclock.pos-tr { top: 5rem; }
+/* Contrôles masqués : la pastille lecture/pause disparaît, l'horloge en bas à gauche descend dans le coin. */
+.nochrome .gclock.pos-bl { bottom: 1rem; }
+.mgclock { -webkit-align-items: center; align-items: center; }
+.mgclock .mglab { font-size: .85rem; color: var(--muted); margin: 0 .5rem 0 .2rem; }
+.mgclock select { font-size: .85rem; padding: .3rem 1.8rem .3rem .7rem; margin-right: .4rem; }
+#hbar .mgclock button { padding: .36rem .65rem; }
 .mkdots { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 3; pointer-events: none; }
 .mapbox:not(.globe) .mkdots { display: none; }
 .mapbox.globe .mks .mkd, .mapbox.globe .mks .mkp, .mapbox.globe .mks .mk.night::before { display: none; }
