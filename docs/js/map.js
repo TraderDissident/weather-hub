@@ -1074,9 +1074,9 @@
     // Plein écran : la carte entière, aussi grande que l'écran le permet, sans débord ; le reste reste vide.
     var full = document.getElementById('app').className.indexOf('mapfull') >= 0;
     /* Place pour l'horloge de macOS : en plein écran seulement, et si l'option est choisie, le haut de l'écran reste
-       libre (22 % de la hauteur) pour la grande heure que macOS pose sur les économiseurs d'écran (Matt, 26/11). La
+       libre (28 % de la hauteur : le bas des chiffres de l'heure de macOS, mesuré sur la photo de Matt du 27/11 ; avant 22 %, le globe touchait presque l'heure) pour la grande heure que macOS pose sur les économiseurs d'écran (Matt, 26/11). La
        carte et le globe se logent dessous. */
-    var reserve = full && osclockOn() ? Math.round(document.getElementById('app').clientHeight * 0.22) : 0;
+    var reserve = full && osclockOn() ? Math.round(document.getElementById('app').clientHeight * 0.28) : 0;
     // Carte plate : mise en page comme sans réserve, puis le tout réduit sous la réserve (voir la fin de M.resize).
     st.root.style.paddingTop = '';
     var fullH = full ? st.root.clientHeight - U.$('.zones', st.root).offsetHeight - 2 : 0;

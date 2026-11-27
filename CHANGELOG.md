@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 1.41.2 · 27/11/2026 · Globe · Plus d'air sous l'heure de macOS
+
+- Place pour l'heure de macOS : 28 % de la hauteur au lieu de 22 %, soit le bas des chiffres de l'heure (mesuré sur une photo de l'écran). Le globe se centre dessous : même écart entre l'heure et le haut du globe qu'entre le bas du globe et le bord de l'écran. La carte plate suit la même réserve.
+
 ## 1.41.1 · 26/11/2026 · Mises à jour · Vérifiées toutes les 30 minutes
 
 - L'app vérifie maintenant qu'une nouvelle version est en ligne toutes les 30 minutes, même affichée en permanence, et se recharge seule pour la prendre. Avant, elle ne vérifiait qu'à l'ouverture, au retour sur l'app et au rechargement de 4 h du matin : l'iPad est resté en 1.32.8 tout l'après-midi du 26/11.
